@@ -1,0 +1,24 @@
+body {
+  margin: 0px;
+  padding: 0px;
+  height: 100vh;
+  width: 100vw;
+  background-color: #35654d;
+}
+
+h1, h2, h3, p, span, a {
+  margin: 0px;
+  padding: 0px;
+}
+
+* {
+  font-family: 'Overpass', sans-serif;
+}
+
+*:focus {
+  outline: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
