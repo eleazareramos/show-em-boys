@@ -1,6 +1,10 @@
+import Table from '../components/Table'
+
 const Main = () => {
   return (
-    <h1>Poker time</h1>
+    <>
+      <Table />
+    </>
   )
 }
 
