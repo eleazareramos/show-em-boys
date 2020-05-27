@@ -106,8 +106,8 @@ const Player = (props) => {
 
   const playerActionMap = {
     check: "👊",
-    fold: "❌",
-    bet: numeral(player.bet || 0).format("$#,#0.00"),
+    fold: `❌${player.bet ? ' '+numeral(player.bet || 0).format('$#,##0.00') : '' }`,
+    bet: numeral(player.bet || 0).format("$#,##0.00"),
   }
   const actionText = !player.action ? "😶" : playerActionMap[player.action]
 
