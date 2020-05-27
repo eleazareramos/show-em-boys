@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Cards from './Cards'
 import numeral from 'numeral'
 
@@ -72,6 +73,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
     },
     checkbox: {
       marginRight: 10,
+      cursor: 'pointer',
     },
   }
 }
@@ -86,9 +88,10 @@ const Player = (props) => {
     isUser,
     isSmallBlind,
     isBigBlind,
-    revealCards,
     isEnd,
   } = props
+
+  const [awarded, setAwarded] = useState(false)
 
   const playerActionMap = {
     check: '👊',
@@ -105,6 +108,7 @@ const Player = (props) => {
   })
 
   const revealed = isUser || (isEnd && player.action !== 'fold')
+  const winnerCheckbox = awarded ? '🤑' : '😑'
 
   return (
     <div style={styles.container}>
@@ -120,7 +124,7 @@ const Player = (props) => {
                 {!player.pendingBuyIn ? 'Buy In' : 'Cancel'}
               </p>
             ) : userIsAdmin && player.pendingBuyIn ? (
-              <p style={styles.approveButton}>✅</p>
+              <p style={styles.approveButton}>💰✅</p>
             ) : null}
             <p>{numeral(player.money).format('$0.00')}</p>
           </div>
@@ -128,8 +132,10 @@ const Player = (props) => {
         <Cards cards={player.hand} revealed={revealed} />
       </div>
       <div style={styles.actionContainer}>
-        {isEnd && player.action !== 'fold' && userIsAdmin ? (
-          <input type="checkbox" style={styles.checkbox} />
+        {isEnd && player.action !== 'fold' ? (
+          <h1 style={styles.checkbox} onClick={() => setAwarded(!awarded)}>
+            {winnerCheckbox}
+          </h1>
         ) : null}
         <div style={styles.actionCircle}>
           <h1 style={styles.actionText}>{actionText}</h1>

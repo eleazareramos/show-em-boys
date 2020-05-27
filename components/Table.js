@@ -3,7 +3,7 @@ import Cards from './Cards'
 import Player from './Player'
 import Community from './Community'
 import Controls from './Controls'
-import Blinds from './Blinds'
+import GameParams from './GameParams'
 
 const PLAYERS = [
   {
@@ -62,7 +62,7 @@ const GAME = {
   minBet: 0,
   maxBet: 10,
   buyIn: 10,
-  end: true
+  // end: true
 }
 
 const USER = { email: 'e@elzr.me', name: 'E', hand: ['KC', 'KH'], money: 10 }
@@ -129,10 +129,11 @@ const Table = () => {
       </div>
       <div style={styles.gameContainer}>
         <Community game={game} playerBets={playerBets} />
-        <Blinds
+        <GameParams
           smallBlind={game.smallBlind}
           bigBlind={game.bigBlind}
           isAdmin={user.email === game.admin}
+          buyIn={game.buyIn}
         />
         <Controls
           inTurn={game.turn === user.email}

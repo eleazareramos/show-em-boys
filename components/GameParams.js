@@ -29,11 +29,15 @@ const createStyles = () => {
   }
 }
 
-const Blinds = (props) => {
-  const { isAdmin, smallBlind, bigBlind } = props
+const GameParams = (props) => {
+  const { isAdmin, smallBlind, bigBlind, buyIn } = props
   const styles = createStyles()
   return (
     <div style={styles.container}>
+      <div style={styles.row('black')}>
+        <h3 style={styles.label}>Buy In</h3>
+        <input disabled={!isAdmin} style={styles.input} value={buyIn}/>
+      </div>
       <div style={styles.row('#003366')}>
         <h3 style={styles.label}>Small Blind</h3>
         <input disabled={!isAdmin} style={styles.input} value={smallBlind} />
@@ -46,4 +50,4 @@ const Blinds = (props) => {
   )
 }
 
-export default Blinds
+export default GameParams
