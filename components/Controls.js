@@ -7,22 +7,30 @@ const createStyles = ({ inTurn, canBet, betType }) => {
       width: '30vw',
       padding: 20,
       margin: 10,
+    },
+    userContainer: {
       cursor: !inTurn && 'not-allowed',
     },
-    button: (hovered) => ({
+    button: (hovered, isAdmin) => ({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      border: '2px solid ' + (inTurn ? 'white' : 'grey'),
+      border: '2px solid ' + (inTurn || isAdmin ? 'white' : 'grey'),
       borderRadius: '5px',
       padding: '0px 20px',
-      cursor: inTurn ? 'pointer' : 'not-allowed',
-      backgroundColor: hovered && 'black',
+      cursor: inTurn || isAdmin ? 'pointer' : 'not-allowed',
+      backgroundColor:
+        !hovered && isAdmin
+          ? '#2b2d2f'
+          : hovered
+          ? 'black'
+          : '',
       marginBottom: 2,
     }),
-    buttonText: (hovered) => ({
-      color: inTurn ? 'white' : 'grey',
-      opacity: inTurn ? 1 : 0.4,
+    buttonText: (hovered, isAdmin) => ({
+      color: inTurn || isAdmin ? 'white' : 'grey',
+      opacity: inTurn || isAdmin ? 1 : 0.4,
+      fontSize: isAdmin && 11
     }),
     bet: {
       display: 'flex',
@@ -46,7 +54,7 @@ const createStyles = ({ inTurn, canBet, betType }) => {
       backgroundColor: 'transparent',
       border: 'none',
       borderRadius: '5px',
-      color: canBet ? 'white' : 'lightgrey',
+      color: canBet ? 'white' : 'darkred',
       padding: '5px 10px',
       fontSize: 20,
       cursor: canBet ? 'pointer' : 'not-allowed',
@@ -55,33 +63,36 @@ const createStyles = ({ inTurn, canBet, betType }) => {
       color: 'white',
       fontSize: 16,
     },
+    adminControls: {
+      marginTop: 20,
+    },
   }
 }
 
-const ControlButton = ({ left, right, inTurn, onClick }) => {
+const ControlButton = ({ left, right, inTurn, onClick, isAdmin }) => {
   const [hovered, setHovered] = useState(false)
   const styles = createStyles({ inTurn, hovered })
   return (
     <div
-      style={styles.button(hovered)}
+      style={styles.button(hovered, isAdmin)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={onClick}
     >
-      <h3 style={styles.buttonText(hovered)}>{left}</h3>
-      <h3 style={styles.buttonText(hovered)}>{right}</h3>
+      <h3 style={styles.buttonText(hovered, isAdmin)}>{left}</h3>
+      <h3 style={styles.buttonText(hovered, isAdmin)}>{right}</h3>
     </div>
   )
 }
 
 const Controls = (props) => {
-  const { inTurn, minBet, smallBlind, maxBet } = props
+  const { inTurn, minBet, smallBlind, maxBet, isAdmin } = props
   const [isBetting, setIsBetting] = useState(false)
   const [betValue, setBetValue] = useState('')
   const [currentMinBet, setCurrentMinBet] = useState(0)
   const [canBet, setCanBet] = useState(false)
   const [betType, setBetType] = useState('call')
-  const styles = createStyles({ inTurn, canBet })
+  const styles = createStyles({ inTurn, canBet, isAdmin })
 
   useEffect(() => {
     inTurn && setIsBetting(false)
@@ -124,40 +135,88 @@ const Controls = (props) => {
 
   return (
     <div style={styles.container}>
-      {isBetting && inTurn ? (
-        <div style={styles.bet}>
-          <h1 style={styles.betSign}>{betType === 'call' ? '$' : '$$'}</h1>
-          <input
-            disabled={betType === 'call'}
-            style={styles.betInput}
-            type="number"
-            value={betValue}
-            min={currentMinBet}
-            max={maxBet}
-            onChange={(e) => setBetValue(e.target.value)}
+      <div style={styles.userContainer}>
+        {isBetting && inTurn ? (
+          <div style={styles.bet}>
+            <h1 style={styles.betSign}>{betType === 'call' ? '$' : '$$'}</h1>
+            <input
+              disabled={betType === 'call'}
+              style={styles.betInput}
+              type="number"
+              value={betValue}
+              min={currentMinBet}
+              max={maxBet}
+              onChange={(e) => setBetValue(e.target.value)}
+            />
+            <button style={styles.betButton}>Bet</button>
+          </div>
+        ) : null}
+        {minBet === 0 ? (
+          <ControlButton
+            left="👊"
+            right="Check"
+            inTurn={inTurn}
+            onClick={() => setIsBetting(false)}
           />
-          <button style={styles.betButton}>Bet</button>
+        ) : null}
+        {minBet > 0 ? (
+          <ControlButton
+            left="$"
+            right="Call"
+            inTurn={inTurn}
+            onClick={doCall}
+          />
+        ) : null}
+        <ControlButton
+          left="$$"
+          right="Raise"
+          inTurn={inTurn}
+          onClick={doRaise}
+        />
+        <ControlButton
+          left="❌"
+          right="Fold"
+          inTurn={inTurn}
+          onClick={() => setIsBetting(false)}
+        />
+      </div>
+      {isAdmin ? (
+        <div style={styles.adminControls}>
+          <ControlButton
+            right="Start Round"
+            isAdmin={isAdmin}
+            onClick={() => setIsBetting(false)}
+          />
+          <ControlButton
+            left="🃏🃏🃏"
+            right="Flop"
+            isAdmin={isAdmin}
+            onClick={() => setIsBetting(false)}
+          />
+          <ControlButton
+            left="🃏🃏🃏🃏"
+            right="Turn"
+            isAdmin={isAdmin}
+            onClick={() => setIsBetting(false)}
+          />
+          <ControlButton
+            left="🃏🃏🃏🃏🃏"
+            right="River"
+            isAdmin={isAdmin}
+            onClick={() => setIsBetting(false)}
+          />
+          <ControlButton
+            right="End Round"
+            isAdmin={isAdmin}
+            onClick={() => setIsBetting(false)}
+          />
+          <ControlButton
+            right="Award Winners"
+            isAdmin={isAdmin}
+            onClick={() => setIsBetting(false)}
+          />
         </div>
       ) : null}
-      <ControlButton
-        left="👊"
-        right="Check"
-        inTurn={inTurn}
-        onClick={() => setIsBetting(false)}
-      />
-      <ControlButton left="$" right="Call" inTurn={inTurn} onClick={doCall} />
-      <ControlButton
-        left="$$"
-        right="Raise"
-        inTurn={inTurn}
-        onClick={doRaise}
-      />
-      <ControlButton
-        left="❌"
-        right="Fold"
-        inTurn={inTurn}
-        onClick={() => setIsBetting(false)}
-      />
     </div>
   )
 }
