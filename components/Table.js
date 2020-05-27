@@ -1,105 +1,105 @@
-import { useState, useEffect } from 'react'
-import Cards from './Cards'
-import Player from './Player'
-import Community from './Community'
-import Controls from './Controls'
-import GameParams from './GameParams'
+import { useState, useEffect } from "react"
+import Cards from "./Cards"
+import Player from "./Player"
+import Community from "./Community"
+import Controls from "./Controls"
+import GameParams from "./GameParams"
+import NewPlayer from "./NewPlayer"
 
 const PLAYERS = [
   {
-    email: 'e@elzr.me',
-    name: 'E',
-    hand: ['KC', 'KH'],
+    email: "e@elzr.me",
+    name: "E",
+    hand: ["KC", "KH"],
     money: 10,
     pendingBuyIn: true,
   },
   {
-    email: 'davidroghanian@gmail.com',
-    name: 'Dave',
-    hand: ['KC', 'KH'],
+    email: "davidroghanian@gmail.com",
+    name: "Dave",
+    hand: ["KC", "KH"],
     money: 10,
-    action: 'check',
+    action: "check",
   },
   {
-    email: 'asigari0711@gmail.com',
-    name: 'Amir',
-    hand: ['KC', 'KH'],
+    email: "asigari0711@gmail.com",
+    name: "Amir",
+    hand: ["KC", "KH"],
     money: 10,
-    action: 'fold',
+    action: "fold",
   },
   {
-    email: 'giancarlocordasco@gmail.com',
-    name: 'GC',
-    hand: ['KC', 'KH'],
+    email: "giancarlocordasco@gmail.com",
+    name: "GC",
+    hand: ["KC", "KH"],
     money: 5,
-    action: 'bet',
+    action: "bet",
     bet: 2,
     pendingBuyIn: true,
   },
   {
-    email: 'johncanlas@gmail.com',
-    name: 'John',
-    hand: ['KC', 'KH'],
+    email: "johncanlas@gmail.com",
+    name: "John",
+    hand: ["KC", "KH"],
     money: 5,
   },
   {
-    email: 'mattsakdalan@gmail.com',
-    name: 'Matt',
-    hand: ['KC', 'KH'],
+    email: "mattsakdalan@gmail.com",
+    name: "Matt",
+    hand: ["KC", "KH"],
     money: 5,
   },
 ]
 
-const GAME = {
-  smallBlind: 1,
-  bigBlind: 2,
-  admin: 'e@elzr.me',
-  smallBlindPlayer: 'e@elzr.me',
-  bigBlindPlayer: 'davidroghanian@gmail.com',
-  turn: 'e@elzr.me',
-  pot: 52,
-  cards: ['AS', 'AS', 'AS', '', ''],
-  minBet: 0,
-  maxBet: 10,
-  buyIn: 10,
-  // end: true
-}
-
-const USER = { email: 'e@elzr.me', name: 'E', hand: ['KC', 'KH'], money: 10 }
-
 const styles = {
   container: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    height: '100vh',
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    height: "100vh",
   },
   playerContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    padding: 20,
   },
   gameContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: '100%',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: "100%",
   },
 }
 
-const Table = () => {
-  const [players, setPlayers] = useState(PLAYERS)
-  const [game, setGame] = useState(GAME)
-  const [user, setUser] = useState (USER)
+const Table = (props) => {
+  const [players, setPlayers] = useState([])
+  const [game, setGame] = useState({})
+  const [user, setUser] = useState({})
   const [playerBets, setPlayerBets] = useState(0)
 
-  useEffect(() => {
-    const total = players.map(p => p.bet || 0).reduce((sum,bet) => sum += bet, 0)
-    setPlayerBets(total)
-  },[players])
+  const isAdmin = user.email === game.admin
 
+  useEffect(() => {
+    setUser(props.user)
+  }, [props.user])
+
+  useEffect(() => {
+    setGame(props.game)
+  }, [props.game])
+
+  useEffect(() => {
+    setPlayers(props.players)
+  }, [props.players])
+
+  useEffect(() => {
+    const total = players
+      .map((p) => p.bet || 0)
+      .reduce((sum, bet) => (sum += bet), 0)
+    setPlayerBets(total)
+  }, [players])
 
   const nextTurn = () => {
     const playerEmails = players.map((p) => p.email)
@@ -112,8 +112,9 @@ const Table = () => {
   return (
     <div style={styles.container}>
       <div style={styles.playerContainer}>
-        {players.map((player) => (
+        {players.map((player,i) => (
           <Player
+            key={i}
             user={user}
             player={player}
             isFirst={player.email === game.firstPlayer}
@@ -124,8 +125,10 @@ const Table = () => {
             nextTurn={nextTurn}
             userIsAdmin={user.email === game.admin}
             isEnd={game.end}
+            gameId={game.id}
           />
         ))}
+        {isAdmin && game.end ? <NewPlayer gameId={game.id} /> : null}
       </div>
       <div style={styles.gameContainer}>
         <Community game={game} playerBets={playerBets} />
@@ -141,6 +144,7 @@ const Table = () => {
           maxBet={Math.min(user.money, game.maxBet)}
           smallBlind={game.smallBlind}
           isAdmin={user.email === game.admin}
+          gameId={game.id}
         />
       </div>
     </div>

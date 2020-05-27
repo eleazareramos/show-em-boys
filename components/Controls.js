@@ -1,61 +1,62 @@
-import { useState, useEffect } from 'react'
-import numeral from 'numeral'
+import { useState, useEffect, useContext } from "react"
+import numeral from "numeral"
+import { ActionsContext } from "../context/firebase"
 
 const createStyles = ({ inTurn, canBet, betType }) => {
   return {
     container: {
-      width: '30vw',
+      width: "30vw",
       padding: 20,
       margin: 10,
     },
     userContainer: {
-      cursor: !inTurn && 'not-allowed',
+      cursor: !inTurn && "not-allowed",
     },
     button: (hovered, isAdmin) => ({
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      border: '2px solid ' + (inTurn || isAdmin ? 'white' : 'grey'),
-      borderRadius: '5px',
-      padding: '0px 20px',
-      cursor: inTurn || isAdmin ? 'pointer' : 'not-allowed',
-      backgroundColor: !hovered && isAdmin ? '#2b2d2f' : hovered ? 'black' : '',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      border: "2px solid " + (inTurn || isAdmin ? "white" : "grey"),
+      borderRadius: "5px",
+      padding: "0px 20px",
+      cursor: inTurn || isAdmin ? "pointer" : "not-allowed",
+      backgroundColor: !hovered && isAdmin ? "#2b2d2f" : hovered ? "black" : "",
       marginBottom: 2,
     }),
     buttonText: (hovered, isAdmin) => ({
-      color: inTurn || isAdmin ? 'white' : 'grey',
+      color: inTurn || isAdmin ? "white" : "grey",
       opacity: inTurn || isAdmin ? 1 : 0.4,
-      fontSize: isAdmin && 11,
+      fontSize: isAdmin && 14,
     }),
     bet: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
       marginBottom: 10,
     },
     betInput: {
-      textAlign: 'center',
-      border: 'none',
-      borderRadius: '5px',
+      textAlign: "center",
+      border: "none",
+      borderRadius: "5px",
       fontSize: 20,
-      backgroundColor: 'green',
-      color: 'white',
-      width: '100%',
+      backgroundColor: "green",
+      color: "white",
+      width: "100%",
       marginRight: 10,
-      padding: '5px 10px',
+      padding: "5px 10px",
       marginLeft: 10,
     },
     betButton: {
-      backgroundColor: 'transparent',
-      border: 'none',
-      borderRadius: '5px',
-      color: canBet ? 'white' : 'darkred',
-      padding: '5px 10px',
+      backgroundColor: "transparent",
+      border: "none",
+      borderRadius: "5px",
+      color: canBet ? "white" : "darkred",
+      padding: "5px 10px",
       fontSize: 20,
-      cursor: canBet ? 'pointer' : 'not-allowed',
+      cursor: canBet ? "pointer" : "not-allowed",
     },
     betSign: {
-      color: 'white',
+      color: "white",
       fontSize: 16,
     },
     adminControls: {
@@ -91,32 +92,35 @@ const ControlButton = ({ left, right, inTurn, onClick, isAdmin, confirm }) => {
     >
       <h3 style={styles.buttonText(hovered, isAdmin)}>{left}</h3>
       <h3 style={styles.buttonText(hovered, isAdmin)}>
-        {confirm && clicked ? 'Click Again to ' + right : right}
+        {confirm && clicked ? "Click Again to " + right : right}
       </h3>
     </div>
   )
 }
 
 const Controls = (props) => {
-  const { inTurn, minBet, smallBlind, maxBet, isAdmin } = props
+  const { inTurn, minBet, smallBlind, maxBet, isAdmin, gameId } = props
   const [isBetting, setIsBetting] = useState(false)
-  const [betValue, setBetValue] = useState('')
+  const [betValue, setBetValue] = useState("")
   const [currentMinBet, setCurrentMinBet] = useState(0)
   const [canBet, setCanBet] = useState(false)
-  const [betType, setBetType] = useState('call')
-  const styles = createStyles({ inTurn, canBet, isAdmin })
+  const [betType, setBetType] = useState("call")
+
+  const actions = useContext(ActionsContext)
+
+  const betIncrement = (smallBlind || 0) / 2 || 1
 
   useEffect(() => {
     inTurn && setIsBetting(false)
   }, [inTurn])
 
   useEffect(() => {
-    if (betType === 'call') {
+    if (betType === "call") {
       setCurrentMinBet(minBet)
       setBetValue(minBet)
     } else {
-      setCurrentMinBet(minBet + (smallBlind || 0) / 2)
-      setBetValue(minBet + (smallBlind || 0) / 2)
+      setCurrentMinBet(minBet + betIncrement)
+      setBetValue(minBet + betIncrement)
     }
   }, [minBet, betType])
 
@@ -124,7 +128,7 @@ const Controls = (props) => {
     const betVal = numeral(betValue).value()
     if (
       !betValue ||
-      betValue === '' ||
+      betValue === "" ||
       isNaN(betVal) ||
       betVal < (currentMinBet || 0) ||
       betVal > maxBet
@@ -136,26 +140,29 @@ const Controls = (props) => {
   }, [betValue, currentMinBet])
 
   const doCall = () => {
-    setBetType('call')
+    setBetType("call")
     setIsBetting(true)
   }
 
   const doRaise = () => {
-    setBetType('raise')
+    setBetType("raise")
     setIsBetting(true)
   }
+
+  const styles = createStyles({ inTurn, canBet, isAdmin })
 
   return (
     <div style={styles.container}>
       <div style={styles.userContainer}>
         {isBetting && inTurn ? (
           <div style={styles.bet}>
-            <h1 style={styles.betSign}>{betType === 'call' ? '$' : '$$'}</h1>
+            <h1 style={styles.betSign}>{betType === "call" ? "$" : "$$"}</h1>
             <input
-              disabled={betType === 'call'}
+              disabled={betType === "call"}
               style={styles.betInput}
               type="number"
               value={betValue}
+              step={betIncrement}
               min={currentMinBet}
               max={maxBet}
               onChange={(e) => setBetValue(e.target.value)}
@@ -198,25 +205,25 @@ const Controls = (props) => {
           <ControlButton
             right="Start Round"
             isAdmin={isAdmin}
-            onClick={() => setIsBetting(false)}
+            onClick={() => actions.startRound({ gameId })}
           />
           <ControlButton
             left="🃏🃏🃏"
             right="Flop"
             isAdmin={isAdmin}
-            onClick={() => setIsBetting(false)}
+            onClick={() => actions.dealCommunity({ type: "flop", gameId })}
           />
           <ControlButton
             left="🃏🃏🃏🃏"
             right="Turn"
             isAdmin={isAdmin}
-            onClick={() => setIsBetting(false)}
+            onClick={() => actions.dealCommunity({ type: "turn", gameId })}
           />
           <ControlButton
             left="🃏🃏🃏🃏🃏"
             right="River"
             isAdmin={isAdmin}
-            onClick={() => setIsBetting(false)}
+            onClick={() => actions.dealCommunity({ type: "river", gameId })}
           />
           <ControlButton
             right="End Round"
