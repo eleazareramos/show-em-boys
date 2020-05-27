@@ -33,7 +33,7 @@ const PLAYERS = [
     hand: ['KC', 'KH'],
     money: 5,
     action: 'bet',
-    bet: 5,
+    bet: 2,
     pendingBuyIn: true,
   },
   {
@@ -53,7 +53,7 @@ const PLAYERS = [
 const GAME = {
   smallBlind: 1,
   bigBlind: 2,
-  admin: 'd@elzr.me',
+  admin: 'e@elzr.me',
   smallBlindPlayer: 'e@elzr.me',
   bigBlindPlayer: 'davidroghanian@gmail.com',
   turn: 'e@elzr.me',
@@ -62,6 +62,7 @@ const GAME = {
   minBet: 0,
   maxBet: 10,
   buyIn: 10,
+  end: true
 }
 
 const USER = { email: 'e@elzr.me', name: 'E', hand: ['KC', 'KH'], money: 10 }

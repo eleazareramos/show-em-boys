@@ -19,7 +19,7 @@ const createStyles = () => {
       backgroundColor: 'green',
       borderRadius: '5px',
       marginRight: 10,
-      textAlign: 'center'
+      textAlign: 'center',
     },
   }
 }
@@ -31,7 +31,11 @@ const Community = (props) => {
     <div style={styles.container}>
       <div>
         <h1 style={styles.pot}>{numeral(game.pot).format('$#,#00.00')}</h1>
-        <h1 style={styles.plus}>+ {numeral(playerBets).format('$#,#00.00')}</h1>
+        {playerBets > 0 ? (
+          <h1 style={styles.plus}>
+            + {numeral(playerBets).format('$#,#00.00')}
+          </h1>
+        ) : null}
       </div>
       <Cards cards={game.cards || []} revealed={true} />
     </div>
