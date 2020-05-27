@@ -19,18 +19,13 @@ const createStyles = ({ inTurn, canBet, betType }) => {
       borderRadius: '5px',
       padding: '0px 20px',
       cursor: inTurn || isAdmin ? 'pointer' : 'not-allowed',
-      backgroundColor:
-        !hovered && isAdmin
-          ? '#2b2d2f'
-          : hovered
-          ? 'black'
-          : '',
+      backgroundColor: !hovered && isAdmin ? '#2b2d2f' : hovered ? 'black' : '',
       marginBottom: 2,
     }),
     buttonText: (hovered, isAdmin) => ({
       color: inTurn || isAdmin ? 'white' : 'grey',
       opacity: inTurn || isAdmin ? 1 : 0.4,
-      fontSize: isAdmin && 11
+      fontSize: isAdmin && 11,
     }),
     bet: {
       display: 'flex',
@@ -69,18 +64,35 @@ const createStyles = ({ inTurn, canBet, betType }) => {
   }
 }
 
-const ControlButton = ({ left, right, inTurn, onClick, isAdmin }) => {
+const ControlButton = ({ left, right, inTurn, onClick, isAdmin, confirm }) => {
   const [hovered, setHovered] = useState(false)
+  const [clicked, setClicked] = useState(false)
   const styles = createStyles({ inTurn, hovered })
+
+  const handleClick = () => {
+    if (confirm) {
+      if (!clicked) {
+        setTimeout(() => {
+          setClicked(false)
+        }, 2000)
+      }
+      setClicked(!clicked)
+      return clicked && onClick()
+    }
+    onClick()
+  }
+
   return (
     <div
       style={styles.button(hovered, isAdmin)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
+      onClick={handleClick}
     >
       <h3 style={styles.buttonText(hovered, isAdmin)}>{left}</h3>
-      <h3 style={styles.buttonText(hovered, isAdmin)}>{right}</h3>
+      <h3 style={styles.buttonText(hovered, isAdmin)}>
+        {confirm && clicked ? 'Click Again to ' + right : right}
+      </h3>
     </div>
   )
 }
@@ -176,6 +188,7 @@ const Controls = (props) => {
         <ControlButton
           left="❌"
           right="Fold"
+          confirm={true}
           inTurn={inTurn}
           onClick={() => setIsBetting(false)}
         />
