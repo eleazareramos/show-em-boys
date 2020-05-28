@@ -146,6 +146,8 @@ const Controls = (props) => {
       case 4:
         setNextDealType("river")
         break
+      default:
+        setNextDealType('flop')
     }
   }, [community])
 
