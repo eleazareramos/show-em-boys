@@ -45,7 +45,7 @@ const Header = (props) => {
       <div style={styles.left}>
         <h2 style={styles.text}>Show 'Em Boys</h2>
         {game.id ? <p style={styles.text}>{`Game: ${game.id}`}</p> : null}
-        {game.id ? <p style={styles.text}>{`Round: ${game.round}`}</p> : null}
+        {game.id ? <p style={styles.text}>{`Round: ${game.round || 0}`}</p> : null}
       </div>
       <div style={styles.right}>
         <p style={styles.actionText} onClick={onClickAction}>
