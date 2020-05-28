@@ -1,5 +1,6 @@
 import { useEffect, useContext, useState } from "react"
 import { ActionsContext } from "../context/firebase"
+import numeral from 'numeral'
 
 const createStyles = () => {
   return {
@@ -49,9 +50,9 @@ const GameParams = (props) => {
     actions.updateGame({
       gameId,
       params: {
-        buyIn: buyInVal,
-        smallBlind: smallBlindVal,
-        bigBlind: bigBlindVal,
+        buyIn: numeral(buyInVal).value(),
+        smallBlind: numeral(smallBlindVal).value(),
+        bigBlind: numeral(bigBlindVal).value(),
       },
     })
   }
