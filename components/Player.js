@@ -161,7 +161,7 @@ const Player = (props) => {
             ) : null}
             <p>{numeral(player.money).format("$#,#00.00")}</p>
           </div>
-          {userIsAdmin && isEnd && player.hand[0] !== '' ? (
+          {userIsAdmin && isEnd && player.hand[0] === '' ? (
             <p
               style={styles.removeText}
               onClick={() =>
