@@ -28,6 +28,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       marginRight: 10,
       maxWidth: 100,
       minWidth: 100,
+      paddingLeft: 5,
       display: "flex",
       flexDirection: "column",
       alignItems: "flex-end",
@@ -38,7 +39,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       // justifyContent: 'flex-end'
     },
     playerNameText: {
-      textAlign: 'right'
+      textAlign: "right",
     },
     money: {
       display: "flex",
@@ -99,14 +100,17 @@ const Player = (props) => {
     isBigBlind,
     isEnd,
     gameId,
+    showEm,
+    awarded,
   } = props
 
   const actions = useContext(ActionsContext)
-  const [awarded, setAwarded] = useState(false)
 
   const playerActionMap = {
     check: "👊",
-    fold: `❌${player.bet ? ' '+numeral(player.bet || 0).format('$#,##0.00') : '' }`,
+    fold: `❌${
+      player.bet ? " " + numeral(player.bet || 0).format("$#,##0.00") : ""
+    }`,
     bet: numeral(player.bet || 0).format("$#,##0.00"),
   }
   const actionText = !player.action ? "😶" : playerActionMap[player.action]
@@ -118,7 +122,7 @@ const Player = (props) => {
     isBigBlind,
   })
 
-  const revealed = isUser || (isEnd && player.action !== "fold")
+  const revealed = isUser || (showEm && player.action !== "fold")
   const winnerCheckbox = awarded ? "🤑" : "😑"
 
   return (
@@ -130,12 +134,29 @@ const Player = (props) => {
             <h3 style={styles.playerNameText}>{player.name}</h3>
           </div>
           <div style={styles.money}>
-            {user.email === player.email ? (
-              <p style={styles.buyInButton}>
+            {(user.email === player.email || userIsAdmin) && isEnd && player.hand[0] === '' ? (
+              <p
+                style={styles.buyInButton}
+                onClick={() =>
+                  actions.requestPlayerBuyIn({
+                    gameId,
+                    player: player.email,
+                    pendingBuyIn: !player.pendingBuyIn,
+                  })
+                }
+              >
                 {!player.pendingBuyIn ? "Buy In" : "Cancel"}
               </p>
-            ) : userIsAdmin && player.pendingBuyIn ? (
-              <p style={styles.approveButton}>💰✅</p>
+            ) : null}
+            {userIsAdmin && player.pendingBuyIn ? (
+              <p
+                style={styles.approveButton}
+                onClick={() => {
+                  actions.buyInPlayer({ gameId, player: player.email })
+                }}
+              >
+                💰
+              </p>
             ) : null}
             <p>{numeral(player.money).format("$0.00")}</p>
           </div>
@@ -153,8 +174,20 @@ const Player = (props) => {
         <Cards cards={player.hand} revealed={revealed} />
       </div>
       <div style={styles.actionContainer}>
-        {isEnd && player.action !== "fold" ? (
-          <h1 style={styles.checkbox} onClick={() => setAwarded(!awarded)}>
+        {isEnd && player.action !== "fold" && player.hand[0] !== '' ? (
+          <h1
+            style={styles.checkbox}
+            onClick={
+              userIsAdmin
+                ? () => {
+                    actions.toggleWinner({
+                      gameId,
+                      selectedPlayer: player.email,
+                    })
+                  }
+                : null
+            }
+          >
             {winnerCheckbox}
           </h1>
         ) : null}

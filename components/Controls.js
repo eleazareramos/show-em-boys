@@ -65,12 +65,21 @@ const createStyles = ({ inTurn, canBet, betType }) => {
   }
 }
 
-const ControlButton = ({ left, right, inTurn, onClick, isAdmin, confirm }) => {
+const ControlButton = ({
+  left,
+  right,
+  inTurn,
+  onClick,
+  isAdmin,
+  confirm,
+  turn,
+}) => {
   const [hovered, setHovered] = useState(false)
   const [clicked, setClicked] = useState(false)
   const styles = createStyles({ inTurn, hovered })
 
   const handleClick = () => {
+    if (!inTurn && !isAdmin) return
     if (confirm) {
       if (!clicked) {
         setTimeout(() => {
@@ -99,12 +108,26 @@ const ControlButton = ({ left, right, inTurn, onClick, isAdmin, confirm }) => {
 }
 
 const Controls = (props) => {
-  const { inTurn, minBet, smallBlind, maxBet, isAdmin, gameId } = props
+  const {
+    inTurn,
+    minBet,
+    smallBlind,
+    maxBet,
+    isAdmin,
+    gameId,
+    user,
+    turn,
+    players,
+    community,
+  } = props
   const [isBetting, setIsBetting] = useState(false)
   const [betValue, setBetValue] = useState("")
   const [currentMinBet, setCurrentMinBet] = useState(0)
   const [canBet, setCanBet] = useState(false)
   const [betType, setBetType] = useState("call")
+  const [nextDealType, setNextDealType] = useState("flop")
+
+  const currentPlayer = players.filter((p) => p.email === turn)[0] || {}
 
   const actions = useContext(ActionsContext)
 
@@ -115,23 +138,38 @@ const Controls = (props) => {
   }, [inTurn])
 
   useEffect(() => {
-    if (betType === "call") {
-      setCurrentMinBet(minBet)
-      setBetValue(minBet)
-    } else {
-      setCurrentMinBet(minBet + betIncrement)
-      setBetValue(minBet + betIncrement)
+    const cardCount = (community || []).filter((c) => c !== "").length
+    switch (cardCount) {
+      case 3:
+        setNextDealType("turn")
+        break
+      case 4:
+        setNextDealType("river")
+        break
     }
-  }, [minBet, betType])
+  }, [community])
+
+  useEffect(() => {
+    const requiredBet = minBet - currentPlayer.bet
+    if (betType === "call") {
+      setCurrentMinBet(requiredBet)
+      setBetValue(requiredBet)
+    } else {
+      setCurrentMinBet(requiredBet + betIncrement)
+      setBetValue(requiredBet + betIncrement)
+    }
+  }, [minBet, betType, currentPlayer])
 
   useEffect(() => {
     const betVal = numeral(betValue).value()
+    const finalBetValue = betVal + currentPlayer.bet
     if (
       !betValue ||
       betValue === "" ||
       isNaN(betVal) ||
-      betVal < (currentMinBet || 0) ||
-      betVal > maxBet
+      finalBetValue < (currentMinBet || 0) ||
+      finalBetValue > maxBet ||
+      betVal > currentPlayer.money
     ) {
       setCanBet(false)
       return
@@ -164,10 +202,24 @@ const Controls = (props) => {
               value={betValue}
               step={betIncrement}
               min={currentMinBet}
-              max={maxBet}
+              max={numeral(maxBet).value()}
               onChange={(e) => setBetValue(e.target.value)}
             />
-            <button style={styles.betButton}>Bet</button>
+            <button
+              style={styles.betButton}
+              onClick={() => {
+                if (!canBet) return
+                actions.playHand({
+                  player: turn,
+                  type: "bet",
+                  bet: numeral(betValue).value(),
+                  gameId,
+                })
+                setIsBetting(false)
+              }}
+            >
+              Bet
+            </button>
           </div>
         ) : null}
         {minBet === 0 ? (
@@ -175,7 +227,9 @@ const Controls = (props) => {
             left="👊"
             right="Check"
             inTurn={inTurn}
-            onClick={() => setIsBetting(false)}
+            onClick={() =>
+              actions.playHand({ player: turn, type: "check", bet: 0, gameId })
+            }
           />
         ) : null}
         {minBet > 0 ? (
@@ -198,42 +252,52 @@ const Controls = (props) => {
           confirm={true}
           inTurn={inTurn}
           onClick={() => setIsBetting(false)}
+          onClick={() =>
+            actions.playHand({ player: turn, type: "fold", bet: 0, gameId })
+          }
         />
       </div>
       {isAdmin ? (
         <div style={styles.adminControls}>
           <ControlButton
+            left="🙌"
             right="Start Round"
             isAdmin={isAdmin}
             onClick={() => actions.startRound({ gameId })}
           />
           <ControlButton
-            left="🃏🃏🃏"
-            right="Flop"
+            left={nextDealType === "flop" ? "🃏🃏🃏" : "🃏"}
+            right={
+              nextDealType.slice(0, 1).toUpperCase() + nextDealType.slice(1, 5)
+            }
             isAdmin={isAdmin}
-            onClick={() => actions.dealCommunity({ type: "flop", gameId })}
+            onClick={() =>
+              actions.dealCommunity({ type: nextDealType, gameId })
+            }
           />
           <ControlButton
-            left="🃏🃏🃏🃏"
-            right="Turn"
-            isAdmin={isAdmin}
-            onClick={() => actions.dealCommunity({ type: "turn", gameId })}
-          />
-          <ControlButton
-            left="🃏🃏🃏🃏🃏"
-            right="River"
-            isAdmin={isAdmin}
-            onClick={() => actions.dealCommunity({ type: "river", gameId })}
-          />
-          <ControlButton
+            left="✋"
             right="End Round"
             isAdmin={isAdmin}
-            onClick={() => setIsBetting(false)}
+            onClick={() => actions.endRound({ gameId })}
           />
           <ControlButton
+            left="👀"
+            right="Show 'Em Boys"
+            isAdmin={isAdmin}
+            onClick={() => actions.showEm({ gameId })}
+          />
+          <ControlButton
+            left="💰"
             right="Award Winners"
             isAdmin={isAdmin}
-            onClick={() => setIsBetting(false)}
+            onClick={() => actions.awardWinners({ gameId })}
+          />
+          <ControlButton
+            left="🧹"
+            right="Clear Table"
+            isAdmin={isAdmin}
+            onClick={() => actions.clearTable({ gameId })}
           />
         </div>
       ) : null}

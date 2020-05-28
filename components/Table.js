@@ -6,51 +6,6 @@ import Controls from "./Controls"
 import GameParams from "./GameParams"
 import NewPlayer from "./NewPlayer"
 
-const PLAYERS = [
-  {
-    email: "e@elzr.me",
-    name: "E",
-    hand: ["KC", "KH"],
-    money: 10,
-    pendingBuyIn: true,
-  },
-  {
-    email: "davidroghanian@gmail.com",
-    name: "Dave",
-    hand: ["KC", "KH"],
-    money: 10,
-    action: "check",
-  },
-  {
-    email: "asigari0711@gmail.com",
-    name: "Amir",
-    hand: ["KC", "KH"],
-    money: 10,
-    action: "fold",
-  },
-  {
-    email: "giancarlocordasco@gmail.com",
-    name: "GC",
-    hand: ["KC", "KH"],
-    money: 5,
-    action: "bet",
-    bet: 2,
-    pendingBuyIn: true,
-  },
-  {
-    email: "johncanlas@gmail.com",
-    name: "John",
-    hand: ["KC", "KH"],
-    money: 5,
-  },
-  {
-    email: "mattsakdalan@gmail.com",
-    name: "Matt",
-    hand: ["KC", "KH"],
-    money: 5,
-  },
-]
-
 const styles = {
   container: {
     display: "flex",
@@ -79,6 +34,7 @@ const Table = (props) => {
   const [game, setGame] = useState({})
   const [user, setUser] = useState({})
   const [playerBets, setPlayerBets] = useState(0)
+  const [maxPlayerMoney, setMaxPlayerMoney] = useState()
 
   const isAdmin = user.email === game.admin
 
@@ -95,10 +51,16 @@ const Table = (props) => {
   }, [props.players])
 
   useEffect(() => {
-    const total = players
-      .map((p) => p.bet || 0)
-      .reduce((sum, bet) => (sum += bet), 0)
+    const bets = players.map((p) => p.bet || 0)
+    const total = bets.reduce((sum, bet) => (sum += bet), 0)
     setPlayerBets(total)
+
+    const max = players.reduce((max, player) => {
+      console.log(player.email, 'max', max, 'bet', player.bet + player.money)
+      const moneyOnHand = player.money + player.bet
+      return Math.min(max, moneyOnHand)
+    }, 100000000) // arbitrary high number to start
+    setMaxPlayerMoney(max)
   }, [players])
 
   const nextTurn = () => {
@@ -109,10 +71,13 @@ const Table = (props) => {
     setGame({ ...game, turn: playerEmails[nextIndex] })
   }
 
+  const cardCount = (game.cards || []).filter((c) => c !== "").length
+  const onBreak = cardCount === 0 && game.end
+
   return (
     <div style={styles.container}>
       <div style={styles.playerContainer}>
-        {players.map((player,i) => (
+        {players.map((player, i) => (
           <Player
             key={i}
             user={user}
@@ -126,9 +91,11 @@ const Table = (props) => {
             userIsAdmin={user.email === game.admin}
             isEnd={game.end}
             gameId={game.id}
+            showEm={game.showEm}
+            awarded={game.winners.includes(player.email)}
           />
         ))}
-        {isAdmin && game.end ? <NewPlayer gameId={game.id} /> : null}
+        {isAdmin && onBreak ? <NewPlayer gameId={game.id} /> : null}
       </div>
       <div style={styles.gameContainer}>
         <Community game={game} playerBets={playerBets} />
@@ -137,14 +104,20 @@ const Table = (props) => {
           bigBlind={game.bigBlind}
           isAdmin={user.email === game.admin}
           buyIn={game.buyIn}
+          gameId={game.id}
         />
         <Controls
-          inTurn={game.turn === user.email}
+          inTurn={game.turn === user.email || user.email === game.admin}
           minBet={game.minBet}
-          maxBet={Math.min(user.money, game.maxBet)}
+          maxBet={maxPlayerMoney}
           smallBlind={game.smallBlind}
           isAdmin={user.email === game.admin}
           gameId={game.id}
+          user={user}
+          turn={game.turn}
+          players={players}
+          gameId={game.id}
+          community={game.cards}
         />
       </div>
     </div>

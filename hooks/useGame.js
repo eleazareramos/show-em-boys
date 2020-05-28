@@ -13,7 +13,7 @@ const INITIAL_GAME = {
   minBet: 0,
   maxBet: 10,
   buyIn: 10,
-  end: false,
+  end: true,
   playerOrder: [],
   winners: [],
   deckId: "",
