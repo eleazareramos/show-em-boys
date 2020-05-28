@@ -47,11 +47,11 @@ const Header = (props) => {
         <h2 style={styles.text} onClick={() => router.push('/')}>
           Show 'Em Boys
         </h2>
-        {game.id ? <p style={styles.text}>{`Game: ${game.id}`}</p> : null}
-        {game.id ? (
+        {game.id && game.admin ? <p style={styles.text}>{`Game: ${game.id}`}</p> : null}
+        {game.id && game.admin ? (
           <p style={styles.text}>{`Round: ${game.round || 0}`}</p>
         ) : null}
-        {game.id ? (
+        {game.id && game.admin ? (
           <p style={styles.text}>{`Host: ${game.admin || 0}`}</p>
         ) : null}
       </div>

@@ -17,13 +17,12 @@ const INITIAL_GAME = {
   playerOrder: [],
   winners: [],
   deckId: '',
-  round: 1,
+  round: 0,
 }
 
 const useGame = (gameId, user) => {
   const firebase = useContext(FirebaseContext)
   const [game, setGame] = useState({})
-  const [needAuth, setNeedAuth] = useState(false)
 
   useEffect(() => {
     if (gameId) {

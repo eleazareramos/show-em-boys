@@ -35,6 +35,7 @@ const createStyles = () => {
       backgroundColor: 'transparent',
       color: 'white',
       fontSize: 16,
+      marginRight: 5,
     },
     helpText: {
       fontSize: 14,
@@ -56,6 +57,8 @@ const LandingPage = (props) => {
       router.push('/?gameId=' + gameId.toLowerCase())
     }
   }
+
+  const failedId = router.query.failed
 
   return (
     <div style={styles.container}>
@@ -81,8 +84,9 @@ const LandingPage = (props) => {
           onChange={(e) => setGameId(e.target.value)}
           onKeyDown={handleEnter}
         />
+        {failedId === gameId ? '❌' : null}
       </div>
-      {gameId.length >= 4 ? (
+      {gameId.length >= 4 && failedId !== gameId ? (
         <p style={styles.helpText}>Press Enter to Join</p>
       ) : null}
     </div>

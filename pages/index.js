@@ -14,14 +14,17 @@ const Main = () => {
   const actions = useContext(ActionsContext)
   const router = useRouter()
   const { gameId } = router.query
-  const { game , createGame } = useGame(gameId, user)
+  const { game, createGame } = useGame(gameId, user)
   const { players } = usePlayers(gameId, game.playerOrder)
 
   useEffect(() => {
-    if(game.doesNotExist){
-      router.push('/')
+    if (game.doesNotExist) {
+      const failedId = gameId
+      if (typeof failedId === 'string') {
+        router.push('/?failed=' + failedId)
+      }
     }
-  },[game])
+  }, [game])
 
   return (
     <>
@@ -31,7 +34,7 @@ const Main = () => {
         signOut={signOut}
         game={{ ...game, id: gameId }}
       />
-      {gameId ? (
+      {gameId && game.admin ? (
         <Table game={{ ...game, id: gameId }} user={user} players={players} />
       ) : (
         <LandingPage user={user} signIn={signIn} createGame={createGame} />
