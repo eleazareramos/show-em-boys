@@ -61,6 +61,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       marginRight: 5,
       fontWeight: "bold",
       border: "1px solid black",
+      textAlign: 'center'
     },
     approveButton: {
       fontSize: 18,
@@ -158,9 +159,9 @@ const Player = (props) => {
                 💰
               </p>
             ) : null}
-            <p>{numeral(player.money).format("$0.00")}</p>
+            <p>{numeral(player.money).format("$#,#00.00")}</p>
           </div>
-          {userIsAdmin && isEnd ? (
+          {userIsAdmin && isEnd && player.hand[0] === '' ? (
             <p
               style={styles.removeText}
               onClick={() =>
