@@ -9,6 +9,8 @@ let firebaseConfig = {}
 
 const DECK_API_BASE_URL = "https://deckofcardsapi.com/api/deck/"
 
+console.log(process.env)
+
 if (process.env.NODE_ENV === "development") {
   firebaseConfig = require("../devFirebaseConfig").default
 } else {
@@ -19,6 +21,9 @@ if (process.env.NODE_ENV === "development") {
     projectId: "show-em-boys",
   }
 }
+
+console.log(process.env.NODE_ENV)
+console.log(firebaseConfig)
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig)
