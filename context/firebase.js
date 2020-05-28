@@ -13,9 +13,9 @@ if (process.env.NODE_ENV === "development") {
   firebaseConfig = require("../devFirebaseConfig").default
 } else {
   firebaseConfig = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    appId: process.env.FIREBASE_APP_ID,
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     projectId: "show-em-boys",
   }
 }
