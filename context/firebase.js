@@ -24,6 +24,12 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig)
 }
 
+const checkGameExists = async (gameId) => {
+  const gameRef = firebase.firestore().collection('games').doc(gameId)
+  const gameDoc = await gameRef.get()
+  return gameDoc.exists
+}
+
 const getGame = async (gameId) => {
   const gameRef = firebase.firestore().collection("games").doc(gameId)
   const gameDoc = await gameRef.get()
@@ -444,6 +450,7 @@ const buyInPlayer = async ({ gameId, player }) => {
 const actions = {
   addPlayer,
   removePlayer,
+  checkGameExists,
   updateGame,
   clearTable,
   startRound,

@@ -1,17 +1,27 @@
-import { useRouter } from "next/router"
-import Header from "../components/Header"
-import Table from "../components/Table"
-import useUser from "../hooks/useUser"
-import useGame from "../hooks/useGame"
-import usePlayers from "../hooks/usePlayers"
+import { useRouter } from 'next/router'
+import Header from '../components/Header'
+import Table from '../components/Table'
+import LandingPage from '../components/LandingPage'
+import useUser from '../hooks/useUser'
+import useGame from '../hooks/useGame'
+import usePlayers from '../hooks/usePlayers'
+import { useEffect, useContext } from 'react'
+import { ActionsContext } from '../context/firebase'
 
 const Main = () => {
   const { user, signIn, signOut } = useUser()
 
+  const actions = useContext(ActionsContext)
   const router = useRouter()
   const { gameId } = router.query
-  const { game } = useGame(gameId, user)
+  const { game , createGame } = useGame(gameId, user)
   const { players } = usePlayers(gameId, game.playerOrder)
+
+  useEffect(() => {
+    if(game.doesNotExist){
+      router.push('/')
+    }
+  },[game])
 
   return (
     <>
@@ -23,7 +33,9 @@ const Main = () => {
       />
       {gameId ? (
         <Table game={{ ...game, id: gameId }} user={user} players={players} />
-      ) : null}
+      ) : (
+        <LandingPage user={user} signIn={signIn} createGame={createGame} />
+      )}
     </>
   )
 }
