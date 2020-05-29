@@ -262,7 +262,7 @@ const Controls = (props) => {
 
   return (
     <div style={styles.container}>
-      {isEnd ? null : (
+      {isEnd || !user.email ? null : (
         <div style={styles.userContainer}>
           {isAdmin && turn !== user.email && (turn || "") !== "" ? (
             <p style={styles.playForText}>Play for {turnName} <span style={styles.playForHelpText}>(only Hosts can do this)</span></p>
@@ -351,9 +351,9 @@ const Controls = (props) => {
             onClick={dealerActionMap[nextDealType].action}
             disabled={nextDealType === "start" && noStart}
           />
-          {players.length < 3 ? (
+          {isEnd && players.length < 3 && community.length === 0 ? (
             <p>Not enough players to begin</p>
-          ) : noStart ? (
+          ) : isEnd && noStart && community.length === 0 ? (
             <p>Some players do not have enough money</p>
           ) : null}
           {!isEnd ? (
