@@ -66,6 +66,15 @@ const createStyles = ({ inTurn, canBet, betType }) => {
     adminControls: {
       marginTop: 20,
     },
+    playForText: {
+      fontWeight: 'bold',
+      marginBottom: 2,
+      color: 'orange'
+    },
+    playForHelpText: {
+      fontSize: 11,
+      color: 'black'
+    }
   }
 }
 
@@ -249,74 +258,86 @@ const Controls = (props) => {
     award: { action: () => actions.awardWinners({ gameId }), icon: "💰" },
   }
 
+  const turnName = (players.filter(p => p.email === turn)[0] || {}).name
+
   return (
     <div style={styles.container}>
-      <div style={styles.userContainer}>
-        {isBetting && inTurn ? (
-          <div style={styles.bet}>
-            <h1 style={styles.betSign}>{betType === "call" ? "$" : "$$"}</h1>
-            <input
-              disabled={betType === "call"}
-              style={styles.betInput}
-              type="number"
-              value={betValue}
-              step={betIncrement}
-              min={currentMinBet}
-              max={numeral(maxBet).value()}
-              onChange={(e) => setBetValue(e.target.value)}
-            />
-            <button
-              style={styles.betButton}
-              onClick={() => {
-                if (!canBet) return
+      {isEnd ? null : (
+        <div style={styles.userContainer}>
+          {isAdmin && turn !== user.email && (turn || "") !== "" ? (
+            <p style={styles.playForText}>Play for {turnName} <span style={styles.playForHelpText}>(only Hosts can do this)</span></p>
+          ) : null}
+          {isBetting && inTurn ? (
+            <div style={styles.bet}>
+              <h1 style={styles.betSign}>{betType === "call" ? "$" : "$$"}</h1>
+              <input
+                disabled={betType === "call"}
+                style={styles.betInput}
+                type="number"
+                value={betValue}
+                step={betIncrement}
+                min={currentMinBet}
+                max={numeral(maxBet).value()}
+                onChange={(e) => setBetValue(e.target.value)}
+              />
+              <button
+                style={styles.betButton}
+                onClick={() => {
+                  if (!canBet) return
+                  actions.playHand({
+                    player: turn,
+                    type: "bet",
+                    bet: numeral(betValue).value(),
+                    gameId,
+                  })
+                  setIsBetting(false)
+                }}
+              >
+                Bet
+              </button>
+            </div>
+          ) : null}
+          {minBet === 0 ? (
+            <ControlButton
+              left="👊"
+              right="Check"
+              inTurn={inTurn}
+              onClick={() =>
                 actions.playHand({
                   player: turn,
-                  type: "bet",
-                  bet: numeral(betValue).value(),
+                  type: "check",
+                  bet: 0,
                   gameId,
                 })
-                setIsBetting(false)
-              }}
-            >
-              Bet
-            </button>
-          </div>
-        ) : null}
-        {minBet === 0 ? (
+              }
+            />
+          ) : null}
+          {minBet > 0 ? (
+            <ControlButton
+              left="$"
+              right="Call"
+              inTurn={inTurn}
+              onClick={doCall}
+            />
+          ) : null}
           <ControlButton
-            left="👊"
-            right="Check"
+            left="$$"
+            right="Raise"
             inTurn={inTurn}
+            onClick={doRaise}
+          />
+          <ControlButton
+            left="❌"
+            right="Fold"
+            confirm={true}
+            inTurn={inTurn}
+            onClick={() => setIsBetting(false)}
             onClick={() =>
-              actions.playHand({ player: turn, type: "check", bet: 0, gameId })
+              actions.playHand({ player: turn, type: "fold", bet: 0, gameId })
             }
           />
-        ) : null}
-        {minBet > 0 ? (
-          <ControlButton
-            left="$"
-            right="Call"
-            inTurn={inTurn}
-            onClick={doCall}
-          />
-        ) : null}
-        <ControlButton
-          left="$$"
-          right="Raise"
-          inTurn={inTurn}
-          onClick={doRaise}
-        />
-        <ControlButton
-          left="❌"
-          right="Fold"
-          confirm={true}
-          inTurn={inTurn}
-          onClick={() => setIsBetting(false)}
-          onClick={() =>
-            actions.playHand({ player: turn, type: "fold", bet: 0, gameId })
-          }
-        />
-      </div>
+        </div>
+      )}
       {isAdmin ? (
         <div style={styles.adminControls}>
           <ControlButton
