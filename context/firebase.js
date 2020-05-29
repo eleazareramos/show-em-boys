@@ -4,6 +4,7 @@ import * as firebase from "firebase/app"
 import "firebase/firestore"
 import "firebase/auth"
 import numeral from "numeral"
+import { parseBody } from 'next/dist/next-server/server/api-utils'
 const Hand = require("pokersolver").Hand
 
 let firebaseConfig = {}
@@ -108,6 +109,7 @@ const clearTable = async ({ gameId }) => {
       hand: ["", ""],
       action: false,
       bet: 0,
+      handText: ''
     }
     for (let playerDoc of playerDocs) {
       batch.update(playerDoc.ref, playerResetObject)
@@ -146,6 +148,15 @@ const startRound = async ({ gameId }) => {
     }
     for (let playerDoc of playerDocs) {
       batch.update(playerDoc.ref, playerResetObject)
+    }
+
+    // CHECK IF ROUND CAN BEGIN
+    const playersLessThanBlind = playerData.some(p => p.money < gameData.bigBlind)
+    if(playerData.length < 3){
+      throw new Error('not enough players')
+    }
+    if(playersLessThanBlind){
+      throw new Error('players less than blind')
     }
 
     // RESET DECK && ROUND NUMBER
@@ -324,6 +335,12 @@ const setNextPlayer = async (currentPlayer, gameId) => {
       }
     }
 
+    const anyPlayerIsAllIn = playerData.some(p => p.money === 0)
+    const allBetsCleared = playerData.every(p => p.bet === 0)
+    if(anyPlayerIsAllIn && allBetsCleared){
+      return await gameRef.update({ turn: '' })
+    }
+
     return await gameRef.update({ turn: found })
   } catch (err) {
     console.log(err)
@@ -390,7 +407,10 @@ const endRound = async ({ gameId }) => {
             return val + suit
           }).sort()
           playerHands.push({email: p.email, cards: fullHandCodes})
-          return Hand.solve(fullHandCodes)
+          const playerRef = firebase.firestore().collection(`games/${gameId}/players`).doc(p.email)
+          const handObject = Hand.solve(fullHandCodes)
+          batch.update(playerRef, { handText: handObject.descr })
+          return handObject
         })
 
       const winningHands = Hand.winners(handResults)

@@ -61,7 +61,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       marginRight: 5,
       fontWeight: "bold",
       border: "1px solid black",
-      textAlign: 'center'
+      textAlign: "center",
     },
     approveButton: {
       fontSize: 18,
@@ -135,7 +135,9 @@ const Player = (props) => {
             <h3 style={styles.playerNameText}>{player.name}</h3>
           </div>
           <div style={styles.money}>
-            {(user.email === player.email || userIsAdmin) && isEnd && player.hand[0] === '' ? (
+            {(user.email === player.email || userIsAdmin) &&
+            isEnd &&
+            player.hand[0] === "" ? (
               <p
                 style={styles.buyInButton}
                 onClick={() =>
@@ -161,7 +163,7 @@ const Player = (props) => {
             ) : null}
             <p>{numeral(player.money).format("$#,#00.00")}</p>
           </div>
-          {userIsAdmin && isEnd && player.hand[0] === '' ? (
+          {userIsAdmin && isEnd && player.hand[0] === "" ? (
             <p
               style={styles.removeText}
               onClick={() =>
@@ -175,22 +177,25 @@ const Player = (props) => {
         <Cards cards={player.hand} revealed={revealed} />
       </div>
       <div style={styles.actionContainer}>
-        {isEnd && player.action !== "fold" && player.hand[0] !== '' ? (
-          <h1
-            style={styles.checkbox}
-            onClick={
-              userIsAdmin
-                ? () => {
-                    actions.toggleWinner({
-                      gameId,
-                      selectedPlayer: player.email,
-                    })
-                  }
-                : null
-            }
-          >
-            {winnerCheckbox}
-          </h1>
+        {isEnd && player.action !== "fold" && player.hand[0] !== "" ? (
+          <>
+            {(player.handText || "") !== "" ? <p>{player.handText}</p> : null}
+            <h1
+              style={styles.checkbox}
+              onClick={
+                userIsAdmin
+                  ? () => {
+                      actions.toggleWinner({
+                        gameId,
+                        selectedPlayer: player.email,
+                      })
+                    }
+                  : null
+              }
+            >
+              {winnerCheckbox}
+            </h1>
+          </>
         ) : null}
         <div style={styles.actionCircle}>
           <h1 style={styles.actionText}>{actionText}</h1>

@@ -65,17 +65,11 @@ const Table = (props) => {
     setMaxPlayerMoney(max)
   }, [players])
 
-  const nextTurn = () => {
-    const playerEmails = players.map((p) => p.email)
-    const currentTurn = playerEmails.indexOf(game.turn)
-    const nextIndex =
-      currentTurn + 1 === playerEmails.length ? 0 : currentTurn + 1
-    setGame({ ...game, turn: playerEmails[nextIndex] })
-  }
-
   const cardCount = (game.cards || []).filter((c) => c !== "").length
   const onBreak = cardCount === 0 && game.end
   const lastSurvivor = players.filter(p => p.action !== 'fold').length === 1
+
+  const noStart = players.some(p => p.money < game.bigBlind) || players.length < 3
 
   return (
     <div style={styles.container}>
@@ -90,7 +84,6 @@ const Table = (props) => {
             isBigBlind={player.email === game.bigBlindPlayer}
             inTurn={player.email === game.turn}
             isUser={player.email === user.email}
-            nextTurn={nextTurn}
             userIsAdmin={user.email === game.admin}
             isEnd={game.end}
             gameId={game.id}
@@ -124,6 +117,7 @@ const Table = (props) => {
           pot={game.pot}
           isEnd={game.end}
           lastSurvivor={lastSurvivor}
+          noStart={noStart}
         />
       </div>
     </div>

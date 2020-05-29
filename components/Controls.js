@@ -12,20 +12,25 @@ const createStyles = ({ inTurn, canBet, betType }) => {
     userContainer: {
       cursor: !inTurn && "not-allowed",
     },
-    button: (hovered, isAdmin, isDealersTurn) => ({
+    button: (hovered, isAdmin, isDealersTurn, disabled) => ({
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      border: isDealersTurn ? '2px solid orange' : (inTurn || isAdmin) ? '2px solid white' : '2px solid grey',
+      border:
+        isDealersTurn && !disabled
+          ? "2px solid orange"
+          : (inTurn || isAdmin) && !disabled
+          ? "2px solid white"
+          : "2px solid grey",
       borderRadius: "5px",
       padding: "0px 20px",
-      cursor: inTurn || isAdmin ? "pointer" : "not-allowed",
+      cursor: (inTurn || isAdmin) && !disabled ? "pointer" : "not-allowed",
       backgroundColor: !hovered && isAdmin ? "#2b2d2f" : hovered ? "black" : "",
       marginBottom: 2,
     }),
-    buttonText: (hovered, isAdmin) => ({
+    buttonText: (hovered, isAdmin, disabled) => ({
       color: inTurn || isAdmin ? "white" : "grey",
-      opacity: inTurn || isAdmin ? 1 : 0.4,
+      opacity: (inTurn || isAdmin) && !disabled ? 1 : 0.4,
     }),
     bet: {
       display: "flex",
@@ -73,7 +78,7 @@ const ControlButton = ({
   confirm,
   turn,
   isDealersTurn,
-  
+  disabled,
 }) => {
   const [hovered, setHovered] = useState(false)
   const [clicked, setClicked] = useState(false)
@@ -95,13 +100,13 @@ const ControlButton = ({
 
   return (
     <div
-      style={styles.button(hovered, isAdmin, isDealersTurn)}
+      style={styles.button(hovered, isAdmin, isDealersTurn, disabled)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
     >
-      <h3 style={styles.buttonText(hovered, isAdmin)}>{left}</h3>
-      <h3 style={styles.buttonText(hovered, isAdmin)}>
+      <h3 style={styles.buttonText(hovered, isAdmin, disabled)}>{left}</h3>
+      <h3 style={styles.buttonText(hovered, isAdmin, disabled)}>
         {confirm && clicked ? "Click Again to " + right : right}
       </h3>
     </div>
@@ -122,7 +127,8 @@ const Controls = (props) => {
     community,
     pot,
     isEnd,
-    lastSurvivor
+    lastSurvivor,
+    noStart,
   } = props
   const [isBetting, setIsBetting] = useState(false)
   const [betValue, setBetValue] = useState("")
@@ -142,29 +148,29 @@ const Controls = (props) => {
   }, [inTurn])
 
   useEffect(() => {
-    if(lastSurvivor && !isEnd){
-      setNextDealType('end')
+    if (lastSurvivor && !isEnd) {
+      setNextDealType("end")
       return
     }
 
     const cardCount = (community || []).filter((c) => c !== "").length
 
-    if(isEnd){
-      if(pot > 0){
-        setNextDealType('award')
-        return
-      } 
-      if(pot === 0 && cardCount > 0){
-        setNextDealType('clear')
+    if (isEnd) {
+      if (pot > 0) {
+        setNextDealType("award")
         return
       }
-      setNextDealType('start')
+      if (pot === 0 && cardCount > 0) {
+        setNextDealType("clear")
+        return
+      }
+      setNextDealType("start")
       return
     }
 
     switch (cardCount) {
-      case 0: 
-        setNextDealType('flop')
+      case 0:
+        setNextDealType("flop")
         break
       case 3:
         setNextDealType("turn")
@@ -173,7 +179,7 @@ const Controls = (props) => {
         setNextDealType("river")
         break
       case 5:
-        setNextDealType('end')
+        setNextDealType("end")
         break
       default:
         setNextDealType("start")
@@ -208,6 +214,10 @@ const Controls = (props) => {
     setCanBet(true)
   }, [betValue, currentMinBet])
 
+  useEffect(() => {
+    setIsBetting(false)
+  }, [turn])
+
   const doCall = () => {
     setBetType("call")
     setIsBetting(true)
@@ -221,13 +231,22 @@ const Controls = (props) => {
   const styles = createStyles({ inTurn, canBet, isAdmin })
 
   const dealerActionMap = {
-    "clear": {action: () => actions.clearTable({ gameId }), icon: "🧹"},
-    "start": {action: () => actions.startRound({ gameId }), icon: "🙌"},
-    "flop": {action: () => actions.dealCommunity({ type: 'flop', gameId }), icon: '🃏🃏🃏' },
-    "turn": {action: () => actions.dealCommunity({ type: 'turn', gameId }), icon: '🃏' }, 
-    "river": {action: () => actions.dealCommunity({ type: 'river', gameId }), icon: '🃏' },
-    "end": {action: () => actions.endRound({ gameId }), icon: '✋' },
-    "award": {action: () => actions.awardWinners({ gameId }), icon: '💰' },
+    clear: { action: () => actions.clearTable({ gameId }), icon: "🧹" },
+    start: { action: () => actions.startRound({ gameId }), icon: "🙌" },
+    flop: {
+      action: () => actions.dealCommunity({ type: "flop", gameId }),
+      icon: "🃏🃏🃏",
+    },
+    turn: {
+      action: () => actions.dealCommunity({ type: "turn", gameId }),
+      icon: "🃏",
+    },
+    river: {
+      action: () => actions.dealCommunity({ type: "river", gameId }),
+      icon: "🃏",
+    },
+    end: { action: () => actions.endRound({ gameId }), icon: "✋" },
+    award: { action: () => actions.awardWinners({ gameId }), icon: "💰" },
   }
 
   return (
@@ -302,21 +321,29 @@ const Controls = (props) => {
         <div style={styles.adminControls}>
           <ControlButton
             left={dealerActionMap[nextDealType].icon}
-            confirm={(turn || '') !== ''}
+            confirm={(turn || "") !== ""}
             right={
               nextDealType.slice(0, 1).toUpperCase() + nextDealType.slice(1, 5)
             }
             isAdmin={isAdmin}
-            isDealersTurn={(turn || '') === ''}
+            isDealersTurn={(turn || "") === ""}
             onClick={dealerActionMap[nextDealType].action}
+            disabled={nextDealType === "start" && noStart}
           />
-          <ControlButton
-            left="👀"
-            right="Show 'Em Boys"
-            confirm={true}
-            isAdmin={isAdmin}
-            onClick={() => actions.showEm({ gameId })}
-          />
+          {players.length < 3 ? (
+            <p>Not enough players to begin</p>
+          ) : noStart ? (
+            <p>Some players do not have enough money</p>
+          ) : null}
+          {!isEnd ? (
+            <ControlButton
+              left="👀"
+              right="Show 'Em Boys"
+              confirm={true}
+              isAdmin={isAdmin}
+              onClick={() => actions.showEm({ gameId })}
+            />
+          ) : null}
         </div>
       ) : null}
     </div>
