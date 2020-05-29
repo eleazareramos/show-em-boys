@@ -4,6 +4,7 @@ import * as firebase from "firebase/app"
 import "firebase/firestore"
 import "firebase/auth"
 import numeral from "numeral"
+const Hand = require("pokersolver").Hand
 
 let firebaseConfig = {}
 
@@ -25,7 +26,7 @@ if (!firebase.apps.length) {
 }
 
 const checkGameExists = async (gameId) => {
-  const gameRef = firebase.firestore().collection('games').doc(gameId)
+  const gameRef = firebase.firestore().collection("games").doc(gameId)
   const gameDoc = await gameRef.get()
   return gameDoc.exists
 }
@@ -365,6 +366,45 @@ const endRound = async ({ gameId }) => {
     const [gameRef, gameData, gameDoc] = await getGame(gameId)
     const [playerRefs, playerData, playerDocs] = await getPlayers(gameId)
     await collectBets(gameDoc, playerDocs)
+
+    const communityCards = gameData.cards.filter((c) => c !== "")
+    const survivors = playerData.filter(p => p.action !== 'fold')
+
+    
+    if(survivors.length === 1){
+      batch.update(gameRef, { winners: [survivors[0].email], showEm: false})
+    }
+
+    if (communityCards.length === 5 && survivors.length > 1) {
+      const playerHands = []
+      const handResults = playerData
+        .filter((p) => p.action !== "fold")
+        .map((p) => {
+          const fullHand = [...p.hand, ...communityCards]
+          const fullHandCodes = fullHand.map((card) => {
+            let val = card[0]
+            let suit = card[1].toLowerCase()
+            if (val === "0") {
+              val = "T"
+            }
+            return val + suit
+          }).sort()
+          playerHands.push({email: p.email, cards: fullHandCodes})
+          return Hand.solve(fullHandCodes)
+        })
+
+      const winningHands = Hand.winners(handResults)
+      const winnerHandCodes = winningHands.map(w => w.cardPool.map(c => c.value+c.suit).sort())
+      
+      let winners = []
+      winnerHandCodes.forEach(hand => {
+        const _winners = playerHands.filter(player => player.cards.join('-') === hand.join('-'))
+        _winners.forEach(winner => winners.push(winner.email))
+      })
+
+      batch.update(gameRef, {winners, showEm: true})
+    }
+
     batch.update(gameRef, { end: true })
     await batch.commit()
   } catch (err) {

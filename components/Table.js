@@ -58,7 +58,7 @@ const Table = (props) => {
     const max = players
       .filter((p) => p.action !== "fold")
       .reduce((max, player) => {
-        console.log(player.email, "max", max, "bet", player.bet + player.money)
+        // console.log(player.email, "max", max, "bet", player.bet + player.money)
         const moneyOnHand = player.money + player.bet
         return Math.min(max, moneyOnHand)
       }, 100000000) // arbitrary high number to start
@@ -75,6 +75,7 @@ const Table = (props) => {
 
   const cardCount = (game.cards || []).filter((c) => c !== "").length
   const onBreak = cardCount === 0 && game.end
+  const lastSurvivor = players.filter(p => p.action !== 'fold').length === 1
 
   return (
     <div style={styles.container}>
@@ -120,6 +121,9 @@ const Table = (props) => {
           players={players}
           gameId={game.id}
           community={game.cards}
+          pot={game.pot}
+          isEnd={game.end}
+          lastSurvivor={lastSurvivor}
         />
       </div>
     </div>

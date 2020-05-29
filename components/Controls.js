@@ -12,11 +12,11 @@ const createStyles = ({ inTurn, canBet, betType }) => {
     userContainer: {
       cursor: !inTurn && "not-allowed",
     },
-    button: (hovered, isAdmin) => ({
+    button: (hovered, isAdmin, isDealersTurn) => ({
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      border: "2px solid " + (inTurn || isAdmin ? "white" : "grey"),
+      border: isDealersTurn ? '2px solid orange' : (inTurn || isAdmin) ? '2px solid white' : '2px solid grey',
       borderRadius: "5px",
       padding: "0px 20px",
       cursor: inTurn || isAdmin ? "pointer" : "not-allowed",
@@ -26,7 +26,6 @@ const createStyles = ({ inTurn, canBet, betType }) => {
     buttonText: (hovered, isAdmin) => ({
       color: inTurn || isAdmin ? "white" : "grey",
       opacity: inTurn || isAdmin ? 1 : 0.4,
-      fontSize: isAdmin && 14,
     }),
     bet: {
       display: "flex",
@@ -73,6 +72,8 @@ const ControlButton = ({
   isAdmin,
   confirm,
   turn,
+  isDealersTurn,
+  
 }) => {
   const [hovered, setHovered] = useState(false)
   const [clicked, setClicked] = useState(false)
@@ -94,7 +95,7 @@ const ControlButton = ({
 
   return (
     <div
-      style={styles.button(hovered, isAdmin)}
+      style={styles.button(hovered, isAdmin, isDealersTurn)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
@@ -119,6 +120,9 @@ const Controls = (props) => {
     turn,
     players,
     community,
+    pot,
+    isEnd,
+    lastSurvivor
   } = props
   const [isBetting, setIsBetting] = useState(false)
   const [betValue, setBetValue] = useState("")
@@ -138,18 +142,43 @@ const Controls = (props) => {
   }, [inTurn])
 
   useEffect(() => {
+    if(lastSurvivor && !isEnd){
+      setNextDealType('end')
+      return
+    }
+
     const cardCount = (community || []).filter((c) => c !== "").length
+
+    if(isEnd){
+      if(pot > 0){
+        setNextDealType('award')
+        return
+      } 
+      if(pot === 0 && cardCount > 0){
+        setNextDealType('clear')
+        return
+      }
+      setNextDealType('start')
+      return
+    }
+
     switch (cardCount) {
+      case 0: 
+        setNextDealType('flop')
+        break
       case 3:
         setNextDealType("turn")
         break
       case 4:
         setNextDealType("river")
         break
+      case 5:
+        setNextDealType('end')
+        break
       default:
-        setNextDealType('flop')
+        setNextDealType("start")
     }
-  }, [community])
+  }, [community, isEnd, lastSurvivor])
 
   useEffect(() => {
     const requiredBet = minBet - currentPlayer.bet
@@ -190,6 +219,16 @@ const Controls = (props) => {
   }
 
   const styles = createStyles({ inTurn, canBet, isAdmin })
+
+  const dealerActionMap = {
+    "clear": {action: () => actions.clearTable({ gameId }), icon: "🧹"},
+    "start": {action: () => actions.startRound({ gameId }), icon: "🙌"},
+    "flop": {action: () => actions.dealCommunity({ type: 'flop', gameId }), icon: '🃏🃏🃏' },
+    "turn": {action: () => actions.dealCommunity({ type: 'turn', gameId }), icon: '🃏' }, 
+    "river": {action: () => actions.dealCommunity({ type: 'river', gameId }), icon: '🃏' },
+    "end": {action: () => actions.endRound({ gameId }), icon: '✋' },
+    "award": {action: () => actions.awardWinners({ gameId }), icon: '💰' },
+  }
 
   return (
     <div style={styles.container}>
@@ -262,44 +301,21 @@ const Controls = (props) => {
       {isAdmin ? (
         <div style={styles.adminControls}>
           <ControlButton
-            left="🙌"
-            right="Start Round"
-            isAdmin={isAdmin}
-            onClick={() => actions.startRound({ gameId })}
-          />
-          <ControlButton
-            left={nextDealType === "flop" ? "🃏🃏🃏" : "🃏"}
+            left={dealerActionMap[nextDealType].icon}
+            confirm={(turn || '') !== ''}
             right={
               nextDealType.slice(0, 1).toUpperCase() + nextDealType.slice(1, 5)
             }
             isAdmin={isAdmin}
-            onClick={() =>
-              actions.dealCommunity({ type: nextDealType, gameId })
-            }
-          />
-          <ControlButton
-            left="✋"
-            right="End Round"
-            isAdmin={isAdmin}
-            onClick={() => actions.endRound({ gameId })}
+            isDealersTurn={(turn || '') === ''}
+            onClick={dealerActionMap[nextDealType].action}
           />
           <ControlButton
             left="👀"
             right="Show 'Em Boys"
+            confirm={true}
             isAdmin={isAdmin}
             onClick={() => actions.showEm({ gameId })}
-          />
-          <ControlButton
-            left="💰"
-            right="Award Winners"
-            isAdmin={isAdmin}
-            onClick={() => actions.awardWinners({ gameId })}
-          />
-          <ControlButton
-            left="🧹"
-            right="Clear Table"
-            isAdmin={isAdmin}
-            onClick={() => actions.clearTable({ gameId })}
           />
         </div>
       ) : null}
