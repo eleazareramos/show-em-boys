@@ -55,11 +55,13 @@ const Table = (props) => {
     const total = bets.reduce((sum, bet) => (sum += bet), 0)
     setPlayerBets(total)
 
-    const max = players.reduce((max, player) => {
-      console.log(player.email, 'max', max, 'bet', player.bet + player.money)
-      const moneyOnHand = player.money + player.bet
-      return Math.min(max, moneyOnHand)
-    }, 100000000) // arbitrary high number to start
+    const max = players
+      .filter((p) => p.action !== "fold")
+      .reduce((max, player) => {
+        console.log(player.email, "max", max, "bet", player.bet + player.money)
+        const moneyOnHand = player.money + player.bet
+        return Math.min(max, moneyOnHand)
+      }, 100000000) // arbitrary high number to start
     setMaxPlayerMoney(max)
   }, [players])
 
