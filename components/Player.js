@@ -98,7 +98,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       maxWidth: 120,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-    }
+    },
   }
 }
 
@@ -187,7 +187,9 @@ const Player = (props) => {
               Kick Out
             </p>
           ) : null}
-          <p style={styles.emailText} className='overflow-on-hover'>{player.email}</p>
+          <p style={styles.emailText} className="overflow-on-hover">
+            {player.email}
+          </p>
         </div>
         <Cards cards={player.hand} revealed={revealed} />
       </div>
@@ -213,10 +215,11 @@ const Player = (props) => {
               {winnerCheckbox}
             </h1>
           </>
-        ) : null}
-        <div style={styles.actionCircle}>
-          <h1 style={styles.actionText}>{actionText}</h1>
-        </div>
+        ) : (
+          <div style={styles.actionCircle}>
+            <h1 style={styles.actionText}>{actionText}</h1>
+          </div>
+        )}
       </div>
     </div>
   )
