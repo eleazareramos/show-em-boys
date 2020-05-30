@@ -118,6 +118,7 @@ const Table = (props) => {
           isEnd={game.end}
           lastSurvivor={lastSurvivor}
           noStart={noStart}
+          showEm={game.showEm}
         />
       </div>
     </div>

@@ -87,6 +87,11 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       color: "darkred",
       cursor: "pointer",
     },
+    handText: {
+      marginRight: 10,
+      fontSize: 14,
+      fontStyle: 'italic'
+    }
   }
 }
 
@@ -139,6 +144,7 @@ const Player = (props) => {
             isEnd &&
             player.hand[0] === "" ? (
               <p
+                className='fade-on-hover'
                 style={styles.buyInButton}
                 onClick={() =>
                   actions.requestPlayerBuyIn({
@@ -165,6 +171,7 @@ const Player = (props) => {
           </div>
           {userIsAdmin && isEnd && player.hand[0] === "" ? (
             <p
+              className='fade-on-hover'
               style={styles.removeText}
               onClick={() =>
                 actions.removePlayer({ gameId, email: player.email })
@@ -179,7 +186,7 @@ const Player = (props) => {
       <div style={styles.actionContainer}>
         {isEnd && player.action !== "fold" && player.hand[0] !== "" ? (
           <>
-            {(player.handText || "") !== "" ? <p>{player.handText}</p> : null}
+            {(player.handText || "") !== "" ? <p style={styles.handText}>{player.handText}</p> : null}
             <h1
               style={styles.checkbox}
               onClick={

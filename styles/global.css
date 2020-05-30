@@ -22,3 +22,8 @@ h1, h2, h3, p, span, a {
 *::-webkit-scrollbar {
   display: none;
 }
+
+.fade-on-hover:hover{
+  opacity: 0.6; 
+  cursor: pointer;
+}
