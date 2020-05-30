@@ -21,6 +21,8 @@ Deployed App: https://show-em-boys.now.sh
 - There are no separate pots for players who can't meet the next bet amount. If any player ends up with no more money to bet, all players reveal their cards (Show 'Em Boys), and the pot is finalized. The round continues with no more additional bets.
 - In order to start a round, every user must have at least enough money to cover the Big Blind. If they're unwilling to buy back in at the Buy In amount, the host must kick them out. 🤷‍♂️
 - Minimum raise amount = 1/2 of the Small Blind.
+- If you're out of money you can buy back in by clicking the "Buy In" button by your name on the table.
+- *Host*: Click the Money Bag icon (💰) by players' names to confirm their buy in (after they've sent their money electronically).
 
 ## 👨‍💻 Dev Notes
 - JAMStack w/ Firebase, NextJS, and React
@@ -30,4 +32,4 @@ Deployed App: https://show-em-boys.now.sh
 - Uses pokersolver (npm) to determine the winner
 
 
-_I hope the name of this game does not come off as female-exclusive. It's just the phrase my "boys" and I use for revealing our hands, and I made this app with them in mind. Anyone can show 'em._
+> _I hope the name of this game does not come off as female-exclusive. It's just the phrase my "boys" and I use for revealing our hands, and I made this app with them in mind. Anyone can show 'em._
