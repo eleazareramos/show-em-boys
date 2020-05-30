@@ -16,4 +16,4 @@ COVID project: A no-nonsense poker app to play with friends remotely (Zoom + Ven
 - In order to start a round, every user must have at least enough money to cover the Big Blind. If they're unwilling to buy back in at the Buy In amount, the host must kick them out. 🤷‍♂️
 - Minimum raise amount = 1/2 of the Small Blind.
 
-_I hope the name of this game does not come off as female-exclusive. It's just the phrase my "boys" and I used for revealing their hands. Anyone can show 'em._
+_I hope the name of this game does not come off as female-exclusive. It's just the phrase my "boys" and I use for revealing our hands, and I made this app with them in mind. Anyone can show 'em._
