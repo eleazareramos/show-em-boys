@@ -23,6 +23,7 @@ Deployed App: https://show-em-boys.now.sh
 - Minimum raise amount = 1/2 of the Small Blind.
 - If you're out of money you can buy back in by clicking the "Buy In" button by your name on the table.
 - *Host*: Click the Money Bag icon (💰) by players' names to confirm their buy in (after they've sent their money electronically).
+- Hosts can play for the player in turn (just in case that person needs to step away from their computer).
 
 ## 👨‍💻 Dev Notes
 - JAMStack w/ Firebase, NextJS, and React
