@@ -27,3 +27,7 @@ h1, h2, h3, p, span, a {
   opacity: 0.6; 
   cursor: pointer;
 }
+
+.overflow-on-hover:hover {
+  overflow-wrap: break-word
+}

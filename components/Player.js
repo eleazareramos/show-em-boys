@@ -26,8 +26,8 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
     },
     playerInfo: {
       marginRight: 10,
-      maxWidth: 140,
-      minWidth: 140,
+      maxWidth: 150,
+      minWidth: 150,
       paddingLeft: 5,
       display: 'flex',
       flexDirection: 'column',
@@ -93,7 +93,11 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       fontStyle: 'italic',
     },
     emailText: {
-      fontSize: 11
+      fontSize: 11,
+      textAlign: 'right',
+      maxWidth: 120,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     }
   }
 }
@@ -183,7 +187,7 @@ const Player = (props) => {
               Kick Out
             </p>
           ) : null}
-          <p style={styles.emailText}>{player.email}</p>
+          <p style={styles.emailText} className='overflow-on-hover'>{player.email}</p>
         </div>
         <Cards cards={player.hand} revealed={revealed} />
       </div>
