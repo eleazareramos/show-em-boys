@@ -1,6 +1,8 @@
 # Show 'Em Boys
 COVID project: A no-nonsense poker app to play with friends remotely (Zoom + Venmo not included).
 
+Deployed App: https://show-em-boys.now.sh
+
 ## 🆕 Start / Host a new game 
 - Login using your Google / Gmail account
 - Create a New Game
@@ -22,6 +24,7 @@ COVID project: A no-nonsense poker app to play with friends remotely (Zoom + Ven
 
 ## 👨‍💻 Dev Notes
 - JAMStack w/ Firebase, NextJS, and React
+- Deployed with Vercel
 - Uses custom hooks with Firestore database listeners to ensure real-time game updates across all players
 - Uses Deck of Cards API
 - Uses pokersolver (npm) to determine the winner
