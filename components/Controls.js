@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react'
 import numeral from 'numeral'
 import { ActionsContext } from '../context/firebase'
+import {useRouter} from 'next/router'
 
 const createStyles = ({ inTurn, canBet, betType }) => {
   return {
@@ -146,6 +147,7 @@ const Controls = (props) => {
   const [canBet, setCanBet] = useState(false)
   const [betType, setBetType] = useState('call')
   const [nextDealType, setNextDealType] = useState('flop')
+  const router = useRouter()
 
   const currentPlayer = players.filter((p) => p.email === turn)[0] || {}
 
@@ -228,6 +230,12 @@ const Controls = (props) => {
     setIsBetting(false)
   }, [turn])
 
+  const newGame = async () => {
+    actions.newGameSamePlayers({ gameId }, (newGameId) => {
+      router.push('/?gameId=' + newGameId)
+    })
+  }
+
   const doCall = () => {
     setBetType('call')
     setIsBetting(true)
@@ -303,7 +311,7 @@ const Controls = (props) => {
                   })
                   setIsBetting(false)
                 }}
-                className='fade-on-hover'
+                className="fade-on-hover"
               >
                 Bet
               </button>
@@ -377,6 +385,22 @@ const Controls = (props) => {
               isAdmin={isAdmin}
               onClick={() => actions.showEm({ gameId })}
             />
+          ) : null}
+          {isEnd && (community || [''])[0] === '' ? (
+            <>
+              <ControlButton
+                left="🔀"
+                right="Shuffle Seats"
+                isAdmin={isAdmin}
+                onClick={() => actions.shufflePlayers({ gameId })}
+              />
+              <ControlButton
+                left="🆕"
+                right="New Game w/ Same Players"
+                isAdmin={isAdmin}
+                onClick={newGame}
+              />
+            </>
           ) : null}
         </div>
       ) : null}

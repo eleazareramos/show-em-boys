@@ -1,24 +1,37 @@
-import { createContext } from "react"
-import axios from "axios"
-import * as firebase from "firebase/app"
-import "firebase/firestore"
-import "firebase/auth"
-import numeral from "numeral"
-import { parseBody } from 'next/dist/next-server/server/api-utils'
-const Hand = require("pokersolver").Hand
+import { createContext } from 'react'
+import axios from 'axios'
+import * as firebase from 'firebase/app'
+import 'firebase/firestore'
+import 'firebase/auth'
+import numeral from 'numeral'
+import uid from 'uid'
+const Hand = require('pokersolver').Hand
 
 let firebaseConfig = {}
+const NEW_GAME = {
+  smallBlindPlayer: '',
+  bigBlindPlayer: '',
+  turn: '',
+  pot: 0,
+  cards: ['', '', '', '', ''],
+  minBet: 0,
+  maxBet: 10,
+  end: true,
+  winners: [],
+  deckId: '',
+  round: 0,
+}
 
-const DECK_API_BASE_URL = "https://deckofcardsapi.com/api/deck/"
+const DECK_API_BASE_URL = 'https://deckofcardsapi.com/api/deck/'
 
-if (process.env.NODE_ENV === "development") {
-  firebaseConfig = require("../devFirebaseConfig").default
+if (process.env.NODE_ENV === 'development') {
+  firebaseConfig = require('../devFirebaseConfig').default
 } else {
   firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    projectId: "show-em-boys",
+    projectId: 'show-em-boys',
   }
 }
 
@@ -27,13 +40,13 @@ if (!firebase.apps.length) {
 }
 
 const checkGameExists = async (gameId) => {
-  const gameRef = firebase.firestore().collection("games").doc(gameId)
+  const gameRef = firebase.firestore().collection('games').doc(gameId)
   const gameDoc = await gameRef.get()
   return gameDoc.exists
 }
 
 const getGame = async (gameId) => {
-  const gameRef = firebase.firestore().collection("games").doc(gameId)
+  const gameRef = firebase.firestore().collection('games').doc(gameId)
   const gameDoc = await gameRef.get()
   const gameData = gameDoc.data()
   return [gameRef, gameData, gameDoc]
@@ -52,9 +65,49 @@ const getPlayers = async (gameId) => {
 const updateGame = async ({ gameId, params }) => {
   await firebase
     .firestore()
-    .collection("games")
+    .collection('games')
     .doc(gameId)
     .update({ ...params })
+}
+
+const shufflePlayers = async ({ gameId }) => {
+  try {
+    const [gameRef, gameData] = await getGame(gameId)
+    const shuffled = gameData.playerOrder.sort((a, b) => 0.5 - Math.random())
+    await gameRef.update({ playerOrder: shuffled })
+  } catch (err) {
+    next(err)
+  }
+}
+
+const newGameSamePlayers = async ({ gameId }, callback) => {
+  try {
+    const batch = firebase.firestore().batch()
+    const [gameRef, gameData] = await getGame(gameId)
+    const [playerRefs, playerData, playerDocs] = await getPlayers(gameId)
+
+    const newGameId = uid(4)
+    const newGameRef = firebase.firestore().collection('games').doc(newGameId)
+    const shuffledPlayers = gameData.playerOrder.sort((a,b) => 0.5 - Math.random())
+    batch.set(newGameRef, {...gameData, ...NEW_GAME, playerOrder: shuffledPlayers})
+
+
+    playerData.forEach( player => {
+      const newPlayer = {
+        hand: ['', ''],
+        email: player.email,
+        name: player.name,
+        money: numeral(gameData.buyIn).value(),
+      }
+      const newPlayerRef = firebase.firestore().collection(`games/${newGameId}/players`).doc(player.email)
+      batch.set(newPlayerRef, newPlayer)
+    })
+
+    await batch.commit()
+    callback(newGameId)
+  } catch (err) {
+    console.log(err)
+  }
 }
 
 const addPlayer = async ({ gameId, email, name }) => {
@@ -69,7 +122,7 @@ const addPlayer = async ({ gameId, email, name }) => {
     if (playerDoc.exists) return
 
     const newPlayer = {
-      hand: ["", ""],
+      hand: ['', ''],
       email,
       name,
       money: numeral(gameData.buyIn).value(),
@@ -106,21 +159,21 @@ const clearTable = async ({ gameId }) => {
     const [playerRefs, playerData, playerDocs] = await getPlayers(gameId)
 
     const playerResetObject = {
-      hand: ["", ""],
+      hand: ['', ''],
       action: false,
       bet: 0,
-      handText: ''
+      handText: '',
     }
     for (let playerDoc of playerDocs) {
       batch.update(playerDoc.ref, playerResetObject)
     }
 
-    const deckResponse = await axios.get(DECK_API_BASE_URL + "new/shuffle")
+    const deckResponse = await axios.get(DECK_API_BASE_URL + 'new/shuffle')
     const deck = deckResponse.data
     const { deck_id } = deck
     batch.update(gameRef, {
       deckId: deck_id,
-      cards: ["", "", "", "", ""],
+      cards: ['', '', '', '', ''],
       pot: 0,
       minBet: 0,
       end: true,
@@ -142,7 +195,7 @@ const startRound = async ({ gameId }) => {
 
     // RESET PLAYERS
     const playerResetObject = {
-      hand: ["", ""],
+      hand: ['', ''],
       action: false,
       bet: 0,
     }
@@ -151,21 +204,23 @@ const startRound = async ({ gameId }) => {
     }
 
     // CHECK IF ROUND CAN BEGIN
-    const playersLessThanBlind = playerData.some(p => p.money < gameData.bigBlind)
-    if(playerData.length < 3){
+    const playersLessThanBlind = playerData.some(
+      (p) => p.money < gameData.bigBlind
+    )
+    if (playerData.length < 3) {
       throw new Error('not enough players')
     }
-    if(playersLessThanBlind){
+    if (playersLessThanBlind) {
       throw new Error('players less than blind')
     }
 
     // RESET DECK && ROUND NUMBER
-    const deckResponse = await axios.get(DECK_API_BASE_URL + "new/shuffle")
+    const deckResponse = await axios.get(DECK_API_BASE_URL + 'new/shuffle')
     const deck = deckResponse.data
     const { deck_id } = deck
     batch.update(gameRef, {
       deckId: deck_id,
-      cards: ["", "", "", "", ""],
+      cards: ['', '', '', '', ''],
       round: gameData.round + 1,
       pot: 0,
       minBet: 0,
@@ -193,21 +248,21 @@ const startRound = async ({ gameId }) => {
     for (let playerDoc of playerDocs) {
       const playerData = playerDoc.data()
       const handResponse = await axios.get(
-        DECK_API_BASE_URL + deck_id + "/draw/?count=2"
+        DECK_API_BASE_URL + deck_id + '/draw/?count=2'
       )
       const hand = handResponse.data.cards
       const handCodes = hand.map((c) => c.code)
       batch.update(playerDoc.ref, { hand: handCodes })
       if (playerData.email === smallBlindPlayer) {
         batch.update(playerDoc.ref, {
-          action: "bet",
+          action: 'bet',
           bet: gameData.smallBlind,
           money: playerData.money - gameData.smallBlind,
         })
       }
       if (playerData.email === bigBlindPlayer) {
         batch.update(playerDoc.ref, {
-          action: "bet",
+          action: 'bet',
           bet: gameData.bigBlind,
           money: playerData.money - gameData.bigBlind,
         })
@@ -232,7 +287,7 @@ const collectBets = async (gameDoc, playerDocs) => {
       if (playerData.bet) {
         pot += playerData.bet
       }
-      const newAction = playerData.action === "fold" ? "fold" : false
+      const newAction = playerData.action === 'fold' ? 'fold' : false
       batch.update(playerDoc.ref, { bet: 0, action: newAction })
     }
 
@@ -251,9 +306,9 @@ const dealCommunity = async ({ type, gameId }) => {
     const [playerRefs, playerData, playerDocs] = await getPlayers(gameId)
     await collectBets(gameDoc, playerDocs)
 
-    const cardCount = type === "flop" ? 3 : 1
+    const cardCount = type === 'flop' ? 3 : 1
     const cardsResponse = await axios.get(
-      DECK_API_BASE_URL + gameData.deckId + "/draw/?count=" + cardCount
+      DECK_API_BASE_URL + gameData.deckId + '/draw/?count=' + cardCount
     )
     const cards = cardsResponse.data.cards
     const cardCodes = cards.map((c) => c.code)
@@ -261,13 +316,13 @@ const dealCommunity = async ({ type, gameId }) => {
     let communityCards = gameData.cards
 
     switch (type) {
-      case "flop":
-        communityCards = [...cardCodes, "", ""]
+      case 'flop':
+        communityCards = [...cardCodes, '', '']
         break
-      case "turn":
-        communityCards = [...gameData.cards.slice(0, 3), ...cardCodes, ""]
+      case 'turn':
+        communityCards = [...gameData.cards.slice(0, 3), ...cardCodes, '']
         break
-      case "river":
+      case 'river':
         communityCards = [...gameData.cards.slice(0, 4), ...cardCodes]
         break
       default:
@@ -314,7 +369,7 @@ const setNextPlayer = async (currentPlayer, gameId) => {
         const nextPos = isLastPlayer ? 0 : pos + 1
 
         // SKIP PLAYER IF FOLDED
-        if (player.action === "fold") {
+        if (player.action === 'fold') {
           pos = nextPos
           continue
         }
@@ -335,9 +390,9 @@ const setNextPlayer = async (currentPlayer, gameId) => {
       }
     }
 
-    const anyPlayerIsAllIn = playerData.some(p => p.money === 0)
-    const allBetsCleared = playerData.every(p => p.bet === 0)
-    if(anyPlayerIsAllIn && allBetsCleared){
+    const anyPlayerIsAllIn = playerData.some((p) => p.money === 0)
+    const allBetsCleared = playerData.every((p) => p.bet === 0)
+    if (anyPlayerIsAllIn && allBetsCleared) {
       return await gameRef.update({ turn: '' })
     }
 
@@ -384,45 +439,53 @@ const endRound = async ({ gameId }) => {
     const [playerRefs, playerData, playerDocs] = await getPlayers(gameId)
     await collectBets(gameDoc, playerDocs)
 
-    const communityCards = gameData.cards.filter((c) => c !== "")
-    const survivors = playerData.filter(p => p.action !== 'fold')
+    const communityCards = gameData.cards.filter((c) => c !== '')
+    const survivors = playerData.filter((p) => p.action !== 'fold')
 
-    
-    if(survivors.length === 1){
-      batch.update(gameRef, { winners: [survivors[0].email], showEm: false})
+    if (survivors.length === 1) {
+      batch.update(gameRef, { winners: [survivors[0].email], showEm: false })
     }
 
     if (communityCards.length === 5 && survivors.length > 1) {
       const playerHands = []
       const handResults = playerData
-        .filter((p) => p.action !== "fold")
+        .filter((p) => p.action !== 'fold')
         .map((p) => {
           const fullHand = [...p.hand, ...communityCards]
-          const fullHandCodes = fullHand.map((card) => {
-            let val = card[0]
-            let suit = card[1].toLowerCase()
-            if (val === "0") {
-              val = "T"
-            }
-            return val + suit
-          }).sort()
-          playerHands.push({email: p.email, cards: fullHandCodes})
-          const playerRef = firebase.firestore().collection(`games/${gameId}/players`).doc(p.email)
+          const fullHandCodes = fullHand
+            .map((card) => {
+              let val = card[0]
+              let suit = card[1].toLowerCase()
+              if (val === '0') {
+                val = 'T'
+              }
+              return val + suit
+            })
+            .sort()
+          playerHands.push({ email: p.email, cards: fullHandCodes })
+          const playerRef = firebase
+            .firestore()
+            .collection(`games/${gameId}/players`)
+            .doc(p.email)
           const handObject = Hand.solve(fullHandCodes)
           batch.update(playerRef, { handText: handObject.descr })
           return handObject
         })
 
       const winningHands = Hand.winners(handResults)
-      const winnerHandCodes = winningHands.map(w => w.cardPool.map(c => c.value+c.suit).sort())
-      
+      const winnerHandCodes = winningHands.map((w) =>
+        w.cardPool.map((c) => c.value + c.suit).sort()
+      )
+
       let winners = []
-      winnerHandCodes.forEach(hand => {
-        const _winners = playerHands.filter(player => player.cards.join('-') === hand.join('-'))
-        _winners.forEach(winner => winners.push(winner.email))
+      winnerHandCodes.forEach((hand) => {
+        const _winners = playerHands.filter(
+          (player) => player.cards.join('-') === hand.join('-')
+        )
+        _winners.forEach((winner) => winners.push(winner.email))
       })
 
-      batch.update(gameRef, {winners, showEm: true})
+      batch.update(gameRef, { winners, showEm: true })
     }
 
     batch.update(gameRef, { end: true })
@@ -435,7 +498,7 @@ const endRound = async ({ gameId }) => {
 const showEm = async ({ gameId }) => {
   await firebase
     .firestore()
-    .collection("games")
+    .collection('games')
     .doc(gameId)
     .update({ showEm: true })
 }
@@ -522,6 +585,8 @@ const actions = {
   awardWinners,
   requestPlayerBuyIn,
   buyInPlayer,
+  shufflePlayers,
+  newGameSamePlayers
 }
 
 const FirebaseContext = createContext(firebase)
