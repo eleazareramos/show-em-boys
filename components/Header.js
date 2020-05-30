@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import useUser from '../hooks/useUser'
+import FileCodeIcon from 'mdi-react/FileCodeIcon'
 
 const createStyles = () => {
   return {
@@ -23,13 +23,26 @@ const createStyles = () => {
     text: {
       color: 'white',
       marginRight: 30,
-      cursor: 'pointer'
+      cursor: 'pointer',
     },
     actionText: {
       color: 'white',
       textDecoration: 'underline',
       cursor: 'pointer',
     },
+    githubIcon: {
+      height: 20,
+      width: 20,
+      cursor: 'pointer',
+    },
+    githubContainer: {
+      display: 'flex',
+      alignItems: 'center',
+    },
+    githubText: {
+      fontSize: 10,
+      marginLeft: 5
+    }
   }
 }
 
@@ -47,13 +60,22 @@ const Header = (props) => {
         <h2 style={styles.text} onClick={() => router.push('/')}>
           Show 'Em Boys
         </h2>
-        {game.id && game.admin ? <p style={styles.text}>{`Game: ${game.id}`}</p> : null}
+        {game.id && game.admin ? (
+          <p style={styles.text}>{`Game: ${game.id}`}</p>
+        ) : null}
         {game.id && game.admin ? (
           <p style={styles.text}>{`Round: ${game.round || 0}`}</p>
         ) : null}
         {game.id && game.admin ? (
           <p style={styles.text}>{`Host: ${game.admin || 0}`}</p>
         ) : null}
+        <div style={styles.githubContainer}>
+          <FileCodeIcon
+            style={styles.githubIcon}
+            onClick={() => window.open('https://github.com/eleazareramos/show-em-boys')}
+          />
+          <p style={styles.githubText}>{`< source code.`}</p>
+        </div>
       </div>
       <div style={styles.right}>
         <p style={styles.actionText} onClick={onClickAction}>
