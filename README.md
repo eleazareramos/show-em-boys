@@ -3,8 +3,6 @@ COVID project: A no-nonsense poker app to play with friends remotely (Zoom + Ven
 
 Deployed App: https://show-em-boys.now.sh
 
-❗️ 🐛 Bug Alert as of 2020-05-31: The Ace of Diamonds does not show up on some browsers. If a card is missing (either from your hand, or the community) assume it's an Ace of Diamonds. Working on it!
-
 ## 🆕 Start / Host a new game 
 - Login using your Google / Gmail account
 - Create a New Game
