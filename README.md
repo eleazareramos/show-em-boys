@@ -2,6 +2,7 @@
 COVID project: A no-nonsense poker app to play with friends remotely (Zoom + Venmo not included).
 
 Deployed App: https://show-em-boys.now.sh
+👍 Contributions Welcome. Please submit a PR.
 
 ## 🆕 Start / Host a new game 
 - Login using your Google / Gmail account
