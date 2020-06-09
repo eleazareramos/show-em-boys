@@ -58,7 +58,7 @@ const getPlayers = async (gameId) => {
     .collection(`games/${gameId}/players`)
     .get()
   const playerDocs = playerRefs.docs
-  const playerData = playerDocs.map((doc) => doc.data())
+  const playerData = playerDocs.map((doc) => ({ ...doc.data(), id: doc.id }))
   return [playerRefs, playerData, playerDocs]
 }
 
@@ -67,6 +67,14 @@ const updateGame = async ({ gameId, params }) => {
     .firestore()
     .collection('games')
     .doc(gameId)
+    .update({ ...params })
+}
+
+const updatePlayer = async ({ gameId, playerId, params }) => {
+  await firebase
+    .firestore()
+    .collection(`games/${gameId}/players`)
+    .doc(playerId)
     .update({ ...params })
 }
 
@@ -88,18 +96,26 @@ const newGameSamePlayers = async ({ gameId }, callback) => {
 
     const newGameId = uid(4)
     const newGameRef = firebase.firestore().collection('games').doc(newGameId)
-    const shuffledPlayers = gameData.playerOrder.sort((a,b) => 0.5 - Math.random())
-    batch.set(newGameRef, {...gameData, ...NEW_GAME, playerOrder: shuffledPlayers})
+    const shuffledPlayers = gameData.playerOrder.sort(
+      (a, b) => 0.5 - Math.random()
+    )
+    batch.set(newGameRef, {
+      ...gameData,
+      ...NEW_GAME,
+      playerOrder: shuffledPlayers,
+    })
 
-
-    playerData.forEach( player => {
+    playerData.forEach((player) => {
       const newPlayer = {
         hand: ['', ''],
         email: player.email,
         name: player.name,
         money: numeral(gameData.buyIn).value(),
       }
-      const newPlayerRef = firebase.firestore().collection(`games/${newGameId}/players`).doc(player.email)
+      const newPlayerRef = firebase
+        .firestore()
+        .collection(`games/${newGameId}/players`)
+        .doc(player.email)
       batch.set(newPlayerRef, newPlayer)
     })
 
@@ -136,15 +152,15 @@ const addPlayer = async ({ gameId, email, name }) => {
   }
 }
 
-const removePlayer = async ({ gameId, email }) => {
+const removePlayer = async ({ gameId, playerId }) => {
   try {
     const [gameRef, gameData] = await getGame(gameId)
     const playerRef = firebase
       .firestore()
       .collection(`games/${gameId}/players`)
-      .doc(email)
+      .doc(playerId)
     await gameRef.update({
-      playerOrder: gameData.playerOrder.filter((em) => em !== email),
+      playerOrder: gameData.playerOrder.filter((em) => em !== playerId),
     })
     await playerRef.delete()
   } catch (err) {
@@ -165,7 +181,11 @@ const clearTable = async ({ gameId }) => {
       handText: '',
     }
     for (let playerDoc of playerDocs) {
-      batch.update(playerDoc.ref, playerResetObject)
+      const playerData = playerDoc.data()
+      batch.update(playerDoc.ref, {
+        ...playerResetObject,
+        money: playerData.money + playerData.bet
+      })
     }
 
     const deckResponse = await axios.get(DECK_API_BASE_URL + 'new/shuffle')
@@ -179,6 +199,8 @@ const clearTable = async ({ gameId }) => {
       end: true,
       winners: [],
       turn: false,
+      smallBlindPlayer: '',
+      bigBlindPlayer: ''
     })
 
     await batch.commit()
@@ -246,21 +268,21 @@ const startRound = async ({ gameId }) => {
 
     // DEAL PLAYER CARDS, FORCE BLINDS TO BET
     for (let playerDoc of playerDocs) {
-      const playerData = playerDoc.data()
+      const playerData = { ...playerDoc.data(), id: playerDoc.id }
       const handResponse = await axios.get(
         DECK_API_BASE_URL + deck_id + '/draw/?count=2'
       )
       const hand = handResponse.data.cards
       const handCodes = hand.map((c) => c.code)
       batch.update(playerDoc.ref, { hand: handCodes })
-      if (playerData.email === smallBlindPlayer) {
+      if (playerData.id === smallBlindPlayer) {
         batch.update(playerDoc.ref, {
           action: 'bet',
           bet: gameData.smallBlind,
           money: playerData.money - gameData.smallBlind,
         })
       }
-      if (playerData.email === bigBlindPlayer) {
+      if (playerData.id === bigBlindPlayer) {
         batch.update(playerDoc.ref, {
           action: 'bet',
           bet: gameData.bigBlind,
@@ -351,7 +373,7 @@ const setNextPlayer = async (currentPlayer, gameId) => {
     const [playerRefs, playerData, playerDocs] = await getPlayers(gameId)
 
     const orderedPlayers = gameData.playerOrder.map((email) => {
-      return playerData.filter((p) => p.email === email)[0]
+      return playerData.filter((p) => p.id === email)[0]
     })
 
     const startPos = gameData.playerOrder.indexOf(currentPlayer)
@@ -376,13 +398,13 @@ const setNextPlayer = async (currentPlayer, gameId) => {
 
         // END LOOP IF PLAYER HASN'T MADE AN ACTION YET && MIN BET IS 0
         if (!player.action && minBet === 0) {
-          found = player.email
+          found = player.id
           break
         }
 
         // END LOOP IF PLAYER'S CURRENT BET IS LESS THAN THE MINIMUM
         if ((player.bet || 0) < minBet) {
-          found = player.email
+          found = player.id
           break
         }
 
@@ -443,7 +465,7 @@ const endRound = async ({ gameId }) => {
     const survivors = playerData.filter((p) => p.action !== 'fold')
 
     if (survivors.length === 1) {
-      batch.update(gameRef, { winners: [survivors[0].email], showEm: false })
+      batch.update(gameRef, { winners: [survivors[0].id], showEm: false })
     }
 
     if (communityCards.length === 5 && survivors.length > 1) {
@@ -462,11 +484,11 @@ const endRound = async ({ gameId }) => {
               return val + suit
             })
             .sort()
-          playerHands.push({ email: p.email, cards: fullHandCodes })
+          playerHands.push({ id: p.id, cards: fullHandCodes })
           const playerRef = firebase
             .firestore()
             .collection(`games/${gameId}/players`)
-            .doc(p.email)
+            .doc(p.id)
           const handObject = Hand.solve(fullHandCodes)
           batch.update(playerRef, { handText: handObject.descr })
           return handObject
@@ -482,7 +504,7 @@ const endRound = async ({ gameId }) => {
         const _winners = playerHands.filter(
           (player) => player.cards.join('-') === hand.join('-')
         )
-        _winners.forEach((winner) => winners.push(winner.email))
+        _winners.forEach((winner) => winners.push(winner.id))
       })
 
       batch.update(gameRef, { winners, showEm: true })
@@ -575,6 +597,7 @@ const actions = {
   removePlayer,
   checkGameExists,
   updateGame,
+  updatePlayer,
   clearTable,
   startRound,
   dealCommunity,
@@ -586,7 +609,7 @@ const actions = {
   requestPlayerBuyIn,
   buyInPlayer,
   shufflePlayers,
-  newGameSamePlayers
+  newGameSamePlayers,
 }
 
 const FirebaseContext = createContext(firebase)

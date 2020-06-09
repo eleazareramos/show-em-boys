@@ -20,7 +20,7 @@ const usePlayers = (gameId, playerOrder) => {
   const reorderPlayers = players => {
     if(!playerOrder || !playerOrder.length) return players
     const orderedPlayers = playerOrder.map((email) => {
-      return players.filter((p) => p.email === email)[0] || { hand: []}
+      return players.filter((p) => p.id === email)[0] || { hand: []}
     })
     return orderedPlayers
   }
@@ -31,7 +31,7 @@ const usePlayers = (gameId, playerOrder) => {
       .collection(`games/${gameId}/players`)
       .onSnapshot((playerSnapshots) => {
         let _players = []
-        playerSnapshots.forEach((player) => _players.push(player.data()))
+        playerSnapshots.forEach((player) => _players.push({...player.data(), id: player.id}))
         setPlayers(_players)
       })
   }

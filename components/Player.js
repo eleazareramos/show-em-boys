@@ -3,7 +3,7 @@ import Cards from './Cards'
 import numeral from 'numeral'
 import { ActionsContext } from '../context/firebase'
 
-const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
+const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind, isUser }) => {
   const actionColorMap = {
     check: '#228B22',
     bet: 'green',
@@ -40,6 +40,7 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
     },
     playerNameText: {
       textAlign: 'right',
+      cursor: 'pointer',
     },
     money: {
       display: 'flex',
@@ -98,6 +99,8 @@ const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind }) => {
       maxWidth: 120,
       overflow: 'hidden',
       textOverflow: 'ellipsis',
+      color: !inTurn && isUser ? 'lightgrey' : 'black',
+      textDecoration: !inTurn && isUser ? 'underline' : '',
     },
   }
 }
@@ -115,6 +118,7 @@ const Player = (props) => {
     gameId,
     showEm,
     awarded,
+    openPlayerModal,
   } = props
 
   const actions = useContext(ActionsContext)
@@ -133,6 +137,7 @@ const Player = (props) => {
     action: player.action,
     isSmallBlind,
     isBigBlind,
+    isUser,
   })
 
   const revealed = isUser || (showEm && player.action !== 'fold')
@@ -144,49 +149,18 @@ const Player = (props) => {
         <div style={styles.playerInfo}>
           <div style={styles.playerName}>
             <div style={styles.indicator} />
-            <h3 style={styles.playerNameText}>{player.name}</h3>
+            <h3
+              style={styles.playerNameText}
+              onClick={userIsAdmin ? () => openPlayerModal(player) : () => {}}
+            >
+              {player.name}
+            </h3>
           </div>
           <div style={styles.money}>
-            {(user.email === player.email || userIsAdmin) &&
-            isEnd &&
-            player.hand[0] === '' ? (
-              <p
-                className="fade-on-hover"
-                style={styles.buyInButton}
-                onClick={() =>
-                  actions.requestPlayerBuyIn({
-                    gameId,
-                    player: player.email,
-                    pendingBuyIn: !player.pendingBuyIn,
-                  })
-                }
-              >
-                {!player.pendingBuyIn ? 'Buy In' : 'Cancel'}
-              </p>
-            ) : null}
-            {userIsAdmin && player.pendingBuyIn ? (
-              <p
-                style={styles.approveButton}
-                onClick={() => {
-                  actions.buyInPlayer({ gameId, player: player.email })
-                }}
-              >
-                💰
-              </p>
-            ) : null}
-            <p>{numeral(player.money).format('$#,#00.00')}</p>
-          </div>
-          {userIsAdmin && isEnd && player.hand[0] === '' ? (
-            <p
-              className="fade-on-hover"
-              style={styles.removeText}
-              onClick={() =>
-                actions.removePlayer({ gameId, email: player.email })
-              }
-            >
-              Kick Out
+            <p style={styles.moneyText}>
+              {numeral(player.money).format('$#,#00.00')}
             </p>
-          ) : null}
+          </div>
           <p style={styles.emailText} className="overflow-on-hover">
             {player.email}
           </p>

@@ -1,5 +1,5 @@
-import { useState, useContext, useEffect } from "react"
-import FirebaseContext from "../context/firebase"
+import { useState, useContext, useEffect } from 'react'
+import FirebaseContext from '../context/firebase'
 
 const useUser = () => {
   const firebase = useContext(FirebaseContext)

@@ -59,21 +59,6 @@ const NewPlayer = (props) => {
   return (
     <div style={styles.container}>
       <h4 style={styles.title}>Add New Player</h4>
-      <input
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        style={styles.input}
-        placeholder="Display Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button disabled={!canSubmit} style={styles.button} onClick={submit}>
-        +
-      </button>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react'
 import numeral from 'numeral'
 import { ActionsContext } from '../context/firebase'
-import {useRouter} from 'next/router'
+import { useRouter } from 'next/router'
 
 const createStyles = ({ inTurn, canBet, betType }) => {
   return {
@@ -140,6 +140,7 @@ const Controls = (props) => {
     lastSurvivor,
     noStart,
     showEm,
+    openPlayerModal,
   } = props
   const [isBetting, setIsBetting] = useState(false)
   const [betValue, setBetValue] = useState('')
@@ -149,7 +150,7 @@ const Controls = (props) => {
   const [nextDealType, setNextDealType] = useState('flop')
   const router = useRouter()
 
-  const currentPlayer = players.filter((p) => p.email === turn)[0] || {}
+  const currentPlayer = players.filter((p) => p.id === turn)[0] || {}
 
   const actions = useContext(ActionsContext)
 
@@ -267,7 +268,7 @@ const Controls = (props) => {
     award: { action: () => actions.awardWinners({ gameId }), icon: '💰' },
   }
 
-  const turnName = (players.filter((p) => p.email === turn)[0] || {}).name
+  const turnName = (players.filter((p) => p.id === turn)[0] || {}).name
 
   const canShowEm =
     players.filter((p) => p.action !== 'fold').some((p) => p.money === 0) &&
@@ -371,6 +372,15 @@ const Controls = (props) => {
             onClick={dealerActionMap[nextDealType].action}
             disabled={nextDealType === 'start' && noStart}
           />
+          {nextDealType !== 'clear' && !isEnd ? (
+            <ControlButton
+              left="🧹"
+              right="Clear Table"
+              confirm={true}
+              isAdmin={isAdmin}
+              onClick={() => actions.clearTable({ gameId })}
+            />
+          ) : null}
           {isEnd && noStart && (community || [''])[0] === '' ? (
             <p>
               {players.length < 3
@@ -388,6 +398,12 @@ const Controls = (props) => {
           ) : null}
           {isEnd && (community || [''])[0] === '' ? (
             <>
+              <ControlButton
+                left="🙋"
+                right="Add Player"
+                isAdmin={isAdmin}
+                onClick={() => openPlayerModal({})}
+              />
               <ControlButton
                 left="🔀"
                 right="Shuffle Seats"
