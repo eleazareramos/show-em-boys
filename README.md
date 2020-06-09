@@ -30,6 +30,7 @@ Deployed App: https://show-em-boys.now.sh
 - Minimum raise amount = 1/2 of the Small Blind.
 - _Host_: You can edit any player's Display Name, Email, and Money by clicking on their name. 💰 Use this feature to buy people back in! 💰
 - _Host_: At any point, you can clear the table if something went wrong. Before doing this, make sure to agree upon what to do with the remaining money in the pot! (e.g., everyone agrees to split it or you try to retrace steps and provide the correct amounts). Remember: only you can update everyone's money amount!
+- _Host_: Someone wants to sit out a round or cash out? Click on their name and kick them out. If they're cashing out, send them their winnings now. Otherwise, jot down how much money they had, so you can add them back in later.
 - Hosts can play for the player in turn (just in case that person needs to step away from their computer).
 
 ## 👨‍💻 Dev Notes
