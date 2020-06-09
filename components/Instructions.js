@@ -2,19 +2,19 @@ const createStyles = () => {
   return {
     container: {
       paddingTop: 50,
-      width: "30%",
+      width: '25%',
     },
     title: {
       marginBottom: 20,
-      textDecoration: "underline",
-      color: 'white'
+      textDecoration: 'underline',
+      color: 'white',
     },
     number: {
       marginRight: 10,
     },
     text: {
       marginBottom: 20,
-      color: "lightgrey",
+      color: 'lightgrey',
     },
   }
 }
@@ -29,10 +29,12 @@ const Instructions = () => {
         Big Blind amounts.
       </p>
       <p style={styles.text}>
-        <span style={styles.number}>2️⃣</span> Add at least 3 players with Gmail
-        accounts (incl. yourself).
+        <span style={styles.number}>2️⃣</span> Add at least 3 players (including
+        yourself).
       </p>
-      <p style={styles.text}>For more instructions, click on the "source code" icon above!</p>
+      <p style={styles.text}>
+        For more instructions, click on the "source code" icon above!
+      </p>
     </div>
   )
 }
