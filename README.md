@@ -8,19 +8,19 @@ Deployed App: https://show-em-boys.now.sh
 
 ## 🆕 Start / Host a new game
 
-- Login using your Google / Gmail account
+- Sign In or Sign Up (save time by using your Google Account)
 - Create a New Game
 - Set the Buy In, Small, and Big Blind
 - Share the Game ID with friends
 
 ## 🙋 Add players to the game
 
-- After confirming receipt of Buy In 💰 on your personal payment app (Venmo, Square Cash, etc.), add the player to the game using their Google / Gmail account + display name.
+- After confirming receipt of Buy In 💰 on your personal payment app (Venmo, Square Cash, etc.), add the player to the game by entering their Show 'Em Boys account email address.
 - Need at least 3 to play!
 
 ## 🚪 Join a game
 
-- Login using your Google / Gmail account
+- Sign In or Sign Up (save time by using your Google Account)
 - Ask the host for the Game ID, and enter it into the lobby.
 
 ## 👀 Special Rules (programmed in)
