@@ -22,6 +22,7 @@ Deployed App: https://show-em-boys.now.sh
 
 - Sign In or Sign Up (save time by using your Google Account)
 - Ask the host for the Game ID, and enter it into the lobby.
+- If your name is on the table, and your email address is underlined - you're in the game! Otherwise, ask the host to add / edit your details.
 
 ## 👀 Special Rules (programmed in)
 
