@@ -362,6 +362,13 @@ const Controls = (props) => {
       )}
       {isAdmin ? (
         <div style={styles.adminControls}>
+          {isEnd && noStart && (community || [''])[0] === '' ? (
+            <p>
+              {players.length < 3
+                ? 'Not enough players to begin'
+                : 'Some players do not have enough money'}
+            </p>
+          ) : null}
           <ControlButton
             left={dealerActionMap[nextDealType].icon}
             confirm={(turn || '') !== ''}
@@ -381,13 +388,6 @@ const Controls = (props) => {
               isAdmin={isAdmin}
               onClick={() => actions.clearTable({ gameId })}
             />
-          ) : null}
-          {isEnd && noStart && (community || [''])[0] === '' ? (
-            <p>
-              {players.length < 3
-                ? 'Not enough players to begin'
-                : 'Some players do not have enough money'}
-            </p>
           ) : null}
           {!isEnd && canShowEm ? (
             <ControlButton
