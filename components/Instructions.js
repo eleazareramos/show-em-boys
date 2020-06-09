@@ -7,6 +7,7 @@ const createStyles = () => {
     title: {
       marginBottom: 20,
       textDecoration: "underline",
+      color: 'white'
     },
     number: {
       marginRight: 10,
@@ -31,6 +32,7 @@ const Instructions = () => {
         <span style={styles.number}>2️⃣</span> Add at least 3 players with Gmail
         accounts (incl. yourself).
       </p>
+      <p style={styles.text}>For more instructions, click on the "source code" icon above!</p>
     </div>
   )
 }

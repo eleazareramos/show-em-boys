@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react"
 import numeral from "numeral"
 import { ActionsContext } from "../context/firebase"
 import { useRouter } from "next/router"
+import ChevronDownIcon from "mdi-react/ChevronDownIcon"
 
 const createStyles = ({ inTurn, canBet, betType }) => {
   return {
@@ -63,6 +64,12 @@ const createStyles = ({ inTurn, canBet, betType }) => {
     betSign: {
       color: "white",
       fontSize: 16,
+    },
+    betButtonHintContainer: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-end",
+      paddingRight: 15,
     },
     adminControls: {
       marginTop: 20,
@@ -289,35 +296,44 @@ const Controls = (props) => {
             </p>
           ) : null}
           {isBetting && inTurn ? (
-            <div style={styles.bet}>
-              <h1 style={styles.betSign}>{betType === "call" ? "$" : "$$"}</h1>
-              <input
-                disabled={betType === "call"}
-                style={styles.betInput}
-                type="number"
-                value={betValue}
-                step={betIncrement}
-                min={currentMinBet}
-                max={numeral(maxBet).value()}
-                onChange={(e) => setBetValue(e.target.value)}
-              />
-              <button
-                style={styles.betButton}
-                onClick={() => {
-                  if (!canBet) return
-                  actions.playHand({
-                    player: turn,
-                    type: "bet",
-                    bet: numeral(betValue).value(),
-                    gameId,
-                  })
-                  setIsBetting(false)
-                }}
-                className="fade-on-hover"
-              >
-                Bet
-              </button>
-            </div>
+            <>
+              {canBet ? (
+                <div style={styles.betButtonHintContainer}>
+                  <ChevronDownIcon className="floating" color='white' />
+                </div>
+              ) : null}
+              <div style={styles.bet}>
+                <h1 style={styles.betSign}>
+                  {betType === "call" ? "$" : "$$"}
+                </h1>
+                <input
+                  disabled={betType === "call"}
+                  style={styles.betInput}
+                  type="number"
+                  value={betValue}
+                  step={betIncrement}
+                  min={currentMinBet}
+                  max={numeral(maxBet).value()}
+                  onChange={(e) => setBetValue(e.target.value)}
+                />
+                <button
+                  style={styles.betButton}
+                  onClick={() => {
+                    if (!canBet) return
+                    actions.playHand({
+                      player: turn,
+                      type: "bet",
+                      bet: numeral(betValue).value(),
+                      gameId,
+                    })
+                    setIsBetting(false)
+                  }}
+                  className="fade-on-hover"
+                >
+                  Bet
+                </button>
+              </div>
+            </>
           ) : null}
           {minBet === 0 ? (
             <ControlButton

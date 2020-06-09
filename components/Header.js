@@ -34,6 +34,7 @@ const createStyles = () => {
       height: 20,
       width: 20,
       cursor: 'pointer',
+      color: 'grey'
     },
     githubContainer: {
       display: 'flex',
@@ -41,7 +42,8 @@ const createStyles = () => {
     },
     githubText: {
       fontSize: 10,
-      marginLeft: 5
+      marginLeft: 5,
+      color: 'grey'
     }
   }
 }
@@ -74,7 +76,7 @@ const Header = (props) => {
             style={styles.githubIcon}
             onClick={() => window.open('https://github.com/eleazareramos/show-em-boys')}
           />
-          <p style={styles.githubText}>{`< source code.`}</p>
+          <p style={styles.githubText}>{`< source code (and instructions)`}</p>
         </div>
       </div>
       <div style={styles.right}>
