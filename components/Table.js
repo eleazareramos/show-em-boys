@@ -129,7 +129,7 @@ const Table = (props) => {
           gameId={game.id}
         />
         <Controls
-          inTurn={game.turn === user.id || user.email === game.admin}
+          inTurn={game.turn === user.email || user.email === game.admin}
           minBet={game.minBet}
           maxBet={maxPlayerMoney}
           smallBlind={game.smallBlind}
