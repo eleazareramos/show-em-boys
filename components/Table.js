@@ -94,6 +94,10 @@ const Table = (props) => {
   const onBreak = cardCount === 0 && game.end
   const lastSurvivor = players.filter((p) => p.action !== 'fold').length === 1
 
+  const matchedUsers = players.filter(p => p.email === user.email)
+  const matchedUser = matchedUsers.length > 0 ? matchedUsers[0] : false
+  const userId = matchedUser ? matchedUser.id : null
+
   const noStart =
     players.some((p) => p.money < game.bigBlind) || players.length < 3
 
@@ -129,13 +133,14 @@ const Table = (props) => {
           gameId={game.id}
         />
         <Controls
-          inTurn={game.turn === user.email || user.email === game.admin}
+          inTurn={game.turn === userId || user.email === game.admin}
           minBet={game.minBet}
           maxBet={maxPlayerMoney}
           smallBlind={game.smallBlind}
           isAdmin={user.email === game.admin}
           gameId={game.id}
           user={user}
+          userId={userId}
           turn={game.turn}
           players={players}
           gameId={game.id}

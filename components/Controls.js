@@ -132,6 +132,7 @@ const Controls = (props) => {
     isAdmin,
     gameId,
     user,
+    userId,
     turn,
     players,
     community,
@@ -279,7 +280,7 @@ const Controls = (props) => {
     <div style={styles.container}>
       {isEnd || !user.email ? null : (
         <div style={styles.userContainer}>
-          {isAdmin && turn !== user.email && (turn || '') !== '' ? (
+          {isAdmin && turn !== userId && (turn || '') !== '' ? (
             <p style={styles.playForText}>
               Play for {turnName}{' '}
               <span style={styles.playForHelpText}>
