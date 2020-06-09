@@ -17,17 +17,46 @@ const useUser = () => {
     []
   )
 
-  const signIn = async () => {
-    console.log('hit')
+  const signInWithGoogle = async (callback) => {
     try {
       const provider = new firebase.auth.GoogleAuthProvider()
       const authResult = await firebase.auth().signInWithPopup(provider)
       const _user = authResult.user
       setUser(_user)
+      callback && callback()
     } catch (err) {
       console.log(err)
     }
   }
+
+  const signIn = async (email, password, callback) => {
+    try {
+      const authResult = await firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+      const _user = authResult.user
+      setUser(_user)
+      callback && callback(authResult)
+    } catch (err) {
+      console.log(err)
+      callback && callback(err)
+    }
+  }
+
+  const signUp = async (email, password, callback) => {
+    try {
+      const authResult = await firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+      const _user = authResult.user
+      setUser(_user)
+      callback && callback(authResult)
+    } catch (err) {
+      console.log(err)
+      callback && callback(err)
+    }
+  }
+
 
   const signOut = async () => {
     try {
@@ -38,9 +67,21 @@ const useUser = () => {
     }
   }
 
+  const forgotPassword = async (email, callback) => {
+    try {
+      const result = await firebase.auth().sendPasswordResetEmail(email)
+      callback && callback(result)
+    } catch(err){
+      callback && callback(err)
+    }
+  }
+
   return {
     user,
     signIn,
+    signUp,
+    signInWithGoogle,
+    forgotPassword,
     signOut,
   }
 }
