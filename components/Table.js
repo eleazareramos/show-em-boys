@@ -6,6 +6,7 @@ import Controls from './Controls'
 import GameParams from './GameParams'
 import NewPlayer from './NewPlayer'
 import PlayerModal from './PlayerModal'
+import Instructions from './Instructions'
 
 const styles = {
   container: {
@@ -122,6 +123,7 @@ const Table = (props) => {
             openPlayerModal={openPlayerModal}
           />
         ))}
+        {players.length === 0 ? <Instructions /> : null}
       </div>
       <div style={styles.gameContainer}>
         <Community game={game} playerBets={playerBets} />
