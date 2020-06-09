@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import Cards from './Cards'
 import numeral from 'numeral'
 import { ActionsContext } from '../context/firebase'
+import PencilIcon from 'mdi-react/PencilIcon'
 
 const createStyles = ({ inTurn, action, isSmallBlind, isBigBlind, isUser }) => {
   const actionColorMap = {
@@ -131,6 +132,7 @@ const Player = (props) => {
     bet: numeral(player.bet || 0).format('$#,##0.00'),
   }
   const actionText = !player.action ? '😶' : playerActionMap[player.action]
+  const [hovered, setHovered] = useState(false)
 
   const styles = createStyles({
     inTurn,
@@ -144,7 +146,11 @@ const Player = (props) => {
   const winnerCheckbox = awarded ? '🤑' : '😑'
 
   return (
-    <div style={styles.container}>
+    <div
+      style={styles.container}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <div style={styles.playerContainer}>
         <div style={styles.playerInfo}>
           <div style={styles.playerName}>
@@ -155,6 +161,12 @@ const Player = (props) => {
             >
               {player.name}
             </h3>
+            {hovered && userIsAdmin ? (
+              <PencilIcon
+                size={16}
+                onClick={userIsAdmin ? () => openPlayerModal(player) : () => {}}
+              />
+            ) : null}
           </div>
           <div style={styles.money}>
             <p style={styles.moneyText}>
