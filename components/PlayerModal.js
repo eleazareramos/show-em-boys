@@ -120,7 +120,8 @@ const PlayerModal = ({ selectedPlayer, setShowPlayerModal, gameId, buyIn }) => {
   const submitChanges = () => {
     const playerId = player.id
     if (playerId) {
-      actions.updatePlayer({ gameId, playerId, params: player })
+      const params = {...player, money: numeral(player.money).value()}
+      actions.updatePlayer({ gameId, playerId, params })
     } else {
       actions.addPlayer({ gameId, email: player.email, name: player.name })
     }
