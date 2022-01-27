@@ -21,7 +21,7 @@ const Cards = (props) => {
   const cardImageSrc = (card) =>
     revealed
       ? PNG_BASE_URL + card + '.png'
-      : 'https://cdn.shopify.com/s/files/1/0200/7616/products/playing-cards-bicycle-rider-back-1_1024x1024.png?v=1535755695'
+      : 'https://media.istockphoto.com/photos/bicycle-rider-back-playing-card-design-picture-id157772536?s=612x612'
 
   return (
     <div style={styles.container}>

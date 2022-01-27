@@ -7,7 +7,6 @@ import numeral from 'numeral'
 import uid from 'uid'
 const Hand = require('pokersolver').Hand
 
-let firebaseConfig = {}
 const NEW_GAME = {
   smallBlindPlayer: '',
   bigBlindPlayer: '',
@@ -24,15 +23,11 @@ const NEW_GAME = {
 
 const DECK_API_BASE_URL = 'https://deckofcardsapi.com/api/deck/'
 
-if (process.env.NODE_ENV === 'development') {
-  firebaseConfig = require('../devFirebaseConfig').default
-} else {
-  firebaseConfig = {
+const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    projectId: 'show-em-boys',
-  }
+    projectId: 'show-em-boys'
 }
 
 if (!firebase.apps.length) {

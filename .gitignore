@@ -5,3 +5,4 @@ devFirebaseConfig.js
 .vercel
 firebase_config_env_vars.txt
 .now
+.env
